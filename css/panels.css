@@ -1,0 +1,1083 @@
+/* panels.css — the ledger on the left, the logbook on the right. */
+
+/* ══ ledger ═══════════════════════════════════════════════
+   Set like an accounts page: hairlines and hanging figures,
+   no boxes, no cards. */
+
+/* The two side panels are peers and are lit as peers. The ledger used to be
+   recessed (--sunk) while the logbook floated on --shadow-lg, which put the
+   most raised surface on the page under the controls and left the plants and
+   the figures at zero. Same glass, same edge, same shadow — the centre is lit
+   from behind instead, so it still reads above both. */
+.ledger, .logbook {
+  background: var(--glass-2);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--highlight);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+}
+
+.ledger {
+  /* Peers are inset like peers. This was cut to --sp-3 to win back height while
+     the fold was overflowing; against the logbook's --pad it read as half a
+     card. The column has slack to spare, so it costs nothing. */
+  /* Top inset matches the logbook's, which is the one that reads against the
+     panel beside it. The bottom carries the receded day-setup block and can be
+     tighter without the two panels looking unlike each other. */
+  padding: var(--pad) var(--pad) var(--sp-4);
+  /* The column is usually shorter than the tallest one beside it. Pushing the
+     day setup down with `margin-top: auto` dumped every spare pixel into one
+     90px hole; spreading it across the three blocks turns the same slack into
+     rhythm, and the column still ends on the shared bottom edge. */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ledger__rows { display: grid; gap: 1px; }
+
+/* Each row carries its share of the usable day as a hairline under it, so the
+   shape of the day is readable without reading four numbers. */
+.lrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .46rem .7rem .56rem;
+  border-radius: var(--r-sm);
+  transition: background-color .2s var(--ease);
+}
+.lrow::after {
+  content: '';
+  position: absolute;
+  left: .7rem;
+  right: .7rem;
+  bottom: .28rem;
+  height: 2px;
+  border-radius: 2px;
+  background:
+    linear-gradient(to right, var(--row-c, var(--faint)) 0 var(--share, 0%),
+                              transparent var(--share, 0%) 100%),
+    var(--hair-soft);
+  transition: background .6s var(--ease);
+}
+.lrow.is-empty::after { opacity: .45; }
+.lrow[data-k="productive"] { --row-c: var(--c-productive); }
+.lrow[data-k="wasted"]     { --row-c: var(--c-wasted); }
+.lrow[data-k="sleep"]      { --row-c: var(--c-sleep); }
+.lrow[data-k="untracked"]  { --row-c: var(--c-untracked); }
+.lrow:hover { background: var(--tile); }
+.lrow dt {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.lrow dd {
+  font-family: var(--display);
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: var(--ink);
+}
+.lrow--muted { background: transparent; }
+.lrow--muted:hover { background: var(--tile); }
+.lrow--muted dt, .lrow--muted dd { color: var(--faint); font-weight: 500; }
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--faint);
+}
+.lrow[data-k="productive"] .swatch { background: var(--c-productive); }
+.lrow[data-k="wasted"]     .swatch { background: var(--c-wasted); }
+.lrow[data-k="sleep"]      .swatch { background: var(--c-sleep); }
+.lrow[data-k="untracked"]  .swatch { background: none; box-shadow: inset 0 0 0 1px var(--faint); }
+
+.ledger__budget {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: var(--rule) solid var(--hair);
+}
+.ledger__budgetline {
+  font-family: var(--display);
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.ledger__budgetline span { letter-spacing: -.01em; }
+.ledger__budgetnote {
+  font-size: var(--t-xs);
+  color: var(--muted);
+  margin-top: .4rem;
+  max-width: 30ch;
+  line-height: 1.55;
+}
+
+/* ── how late tonight runs ─────────────────────────────── */
+.windowend { margin-top: var(--sp-4); }
+
+/* A two-state choice does not need a heading on its own line. Stacked, the
+   label and the pills cost 65px each; side by side they cost 28. */
+.windowend--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.windowend--inline .windowend__label { margin-bottom: 0; flex: none; }
+.windowend--inline .windowend__opts { flex: 0 1 auto; grid-auto-columns: auto; }
+.windowend--inline .windowend__opts button { padding-inline: .7rem; }
+.windowend__label {
+  display: block;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: .4rem;
+}
+.windowend__opts {
+  display: grid;
+  /* auto-flow rather than a fixed count, so this control fits whatever number
+     of presets it is given — five window ends, seven targets */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: .2rem;
+  padding: .28rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.windowend__opts button {
+  padding: .42rem .2rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--muted);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.windowend__opts button:hover { color: var(--ink); }
+.windowend__opts button:active { transform: scale(.92); }
+.windowend__opts button[aria-checked="true"] {
+  color: var(--pill-fg);
+  background: var(--pill-bg);
+  box-shadow: var(--shadow-sm);
+}
+/* Anything past the normal close is a night stretch, and looks like one.
+   Scoped to [data-end] so it does not also paint the daily-target buttons,
+   which share this control's markup but carry [data-target]. */
+.windowend__opts button[data-end][aria-checked="true"]:not([data-end="1200"]) {
+  background: var(--pill-sleep);
+  box-shadow: var(--shadow-sm);
+}
+/* Was --c-sleep, to tie it to the idea of a late night. That blue measured
+   2.53:1 on the panel — well under AA, and this is a whole sentence. The block
+   it sits in already recedes; it does not need colour to stay quiet. */
+.windowend__note {
+  font-size: var(--t-xs);
+  color: var(--muted);
+  margin-top: .5rem;
+  line-height: 1.5;
+  max-width: 32ch;
+}
+.windowend__note:empty { display: none; }
+
+.nightsleep { margin-top: var(--sp-4); }
+.nightsleep__label {
+  display: block;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: .4rem;
+}
+.nightsleep__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: .45rem;
+}
+.nightsleep__field { display: flex; gap: .45rem; }
+.nightsleep__field input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  padding: .55rem .7rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  font-size: var(--t-sm);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.nightsleep__field input:hover { background: var(--tile-2); }
+.nightsleep__field input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.nightsleep__note {
+  font-size: var(--t-xs);
+  color: var(--muted);
+  margin-top: .55rem;
+  line-height: 1.5;
+  max-width: 32ch;
+}
+
+/* ══ logbook ══════════════════════════════════════════════ */
+
+.logbook {
+  padding: var(--pad);
+  /* surface comes from the shared .ledger/.logbook rule at the top of this file */
+  display: flex;
+  flex-direction: column;
+}
+
+/* The slack in the column goes to the entry list, not to empty space under the
+   panel. Each link needs min-height:0 or a flex item refuses to shrink below
+   its content and the scroll box never forms. */
+#bookLog, #bookPlan, #bookTasks {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── log / plan switch ─────────────────────────────────── */
+.booktabs {
+  display: flex;
+  gap: .2rem;
+  padding: .28rem;
+  margin-bottom: .75rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.booktabs button {
+  flex: 1 1 0;
+  padding: .45rem .6rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--faint);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.booktabs button:hover { color: var(--ink-2); }
+.booktabs button:active { transform: scale(.95); }
+.booktabs button[aria-selected="true"] {
+  color: var(--pill-fg);
+  background: var(--pill-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.tagpick {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .3rem;
+  padding: .3rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .28rem;
+  padding: .5rem .3rem .45rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--muted);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.tag:hover { color: var(--ink); }
+.tag:active { transform: scale(.94); }
+.tag[data-tag="productive"] { --tag-pill: var(--pill-productive); }
+.tag[data-tag="wasted"]     { --tag-pill: var(--pill-wasted); }
+.tag[data-tag="sleep"]      { --tag-pill: var(--pill-sleep); }
+.tag[aria-checked="true"] {
+  color: var(--pill-fg);
+  background: var(--tag-pill, var(--pill-bg));
+  box-shadow: var(--shadow-sm);
+}
+.tag[aria-checked="true"] kbd { background: rgba(255, 255, 255, .28); color: inherit; }
+
+.chips { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .45rem; margin-top: .8rem; }
+.chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  padding: .7rem .3rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  cursor: pointer;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  transition: border-color .2s var(--ease), background-color .2s var(--ease), transform .2s var(--bounce);
+}
+.chip:hover { background: var(--tile-2); border-color: var(--moss); }
+.chip:active { transform: scale(.93); }
+
+.custom { margin-top: .5rem; }
+.custom__row { display: grid; grid-template-columns: 4.7rem 3.9rem minmax(0, 1fr) auto; gap: .45rem; }
+.custom__at { text-align: center; }
+.custom__row input {
+  min-width: 0;
+  padding: .6rem .95rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  font-size: var(--t-sm);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.custom__row input:hover { background: var(--tile-2); }
+.custom__row input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.custom__row input::placeholder { color: var(--faint); }
+
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-top: 1rem;
+  padding: .65rem .65rem .65rem 1.05rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.timer__face { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+.timer__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--faint);
+  flex: none;
+  align-self: center;
+}
+.timer[data-running="true"] .timer__dot {
+  background: var(--terracotta);
+  animation: pulse 2.2s var(--ease) infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+.timer__time {
+  font-family: var(--display);
+  font-size: var(--t-md);
+  letter-spacing: .02em;
+}
+.timer__tag {
+  font-size: var(--t-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* entries */
+.entries {
+  flex: 1 1 auto;
+  min-height: 5rem;
+  overflow-y: auto;
+  display: grid;
+  /* Without this the grid rows stretch to fill the column the panel now
+     gives them, and four entries drift 70px apart. The slack belongs at the
+     bottom of the list, not shared out between the rows. */
+  align-content: start;
+  gap: .25rem;
+  mask-image: linear-gradient(to bottom, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent);
+}
+.entries:empty::after { content: 'Nothing logged yet'; }
+.entry { border-radius: var(--r-md); font-size: var(--t-sm); }
+.entry__row {
+  display: grid;
+  grid-template-columns: 2.9rem 1fr auto 1.4rem;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .85rem;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background-color .2s var(--ease);
+}
+.entry__row:hover { background: var(--tile); }
+.entry__row:focus-visible { outline: 2px solid var(--c-productive); outline-offset: -2px; }
+.entry.is-editing { background: var(--tile); box-shadow: inset 0 0 0 1px var(--hair-soft); }
+.entry.is-editing .entry__row { background: none; }
+.entry__at { color: var(--faint); font-size: var(--t-xs); letter-spacing: .03em; }
+.entry__label {
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+}
+.entry__label .swatch { align-self: center; }
+.entry__min { font-family: var(--display); font-weight: 600; color: var(--ink); }
+.entry__del {
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--faint);
+  line-height: 1;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity .18s var(--ease), color .18s var(--ease), background-color .18s var(--ease);
+}
+.entry__del:hover { background: var(--hair-soft); }
+.entry__row:hover .entry__del, .entry__del:focus-visible { opacity: 1; }
+.entry__del:hover { color: var(--rust); }
+.entry[data-tag="productive"] .swatch { background: var(--c-productive); }
+.entry[data-tag="wasted"]     .swatch { background: var(--c-wasted); }
+.entry[data-tag="sleep"]      .swatch { background: var(--c-sleep); }
+
+/* ── correcting an entry ── */
+
+.editor {
+  display: grid;
+  gap: .5rem;
+  padding: .1rem .85rem .75rem;
+  animation: editorIn .18s var(--ease);
+}
+@keyframes editorIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: none; }
+}
+.editor__row { display: grid; grid-template-columns: 4.6rem 4.4rem minmax(0, 1fr); gap: .4rem; }
+.editor__row--acts { grid-template-columns: auto auto; justify-content: space-between; align-items: center; }
+.editor input {
+  min-width: 0;
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: .45rem .8rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  color: var(--ink);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.editor input:hover { background: var(--tile-2); }
+.editor input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.editor input::placeholder { color: var(--faint); }
+.editor__save { padding: .4rem .9rem; font-size: var(--t-xs); }
+
+/* ── nothing here yet ─────────────────────────────────────
+   These lists stretch to fill their column, so an empty one used to be a
+   whisper of grey text adrift in 400px of panel. It owns the space instead,
+   and says "room to grow" — which is the whole metaphor — rather than looking
+   like something failed to load. The leaf is drawn, not an emoji, so it takes
+   the theme with it. */
+.entries:empty, .tasks:empty, .plan__list:empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: .55rem;
+  padding: var(--sp-4) var(--sp-3);
+  text-align: center;
+}
+.entries:empty::before, .tasks:empty::before, .plan__list:empty::before {
+  content: '';
+  width: 26px;
+  height: 26px;
+  opacity: .5;
+  background: var(--sage);
+  -webkit-mask: var(--sprout) center / contain no-repeat;
+  mask: var(--sprout) center / contain no-repeat;
+}
+.entries:empty::after, .tasks:empty::after, .plan__list:empty::after {
+  font-family: var(--display);
+  font-size: var(--t-sm);
+  color: var(--faint);
+  max-width: 22ch;
+  line-height: 1.5;
+}
+/* two of these share one column, so they get the compact version */
+.plan__list:empty { gap: .35rem; padding: var(--sp-2); }
+.plan__list:empty::before { width: 18px; height: 18px; }
+.plan__list:empty::after { font-size: var(--t-xs); }
+
+/* ══ tasks ════════════════════════════════════════════════
+   What you still have to do. Nothing here writes to the ledger on its own —
+   the styling says so too: a task reads as a note, not as a figure. */
+
+.booktabs__count {
+  display: inline-block;
+  min-width: 1.15rem;
+  margin-left: .35rem;
+  padding: 0 .3rem;
+  border-radius: var(--r-pill);
+  background: var(--tile-2);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
+  vertical-align: text-top;
+}
+.booktabs button[aria-selected="true"] .booktabs__count {
+  background: rgba(255, 255, 255, .28);
+  color: inherit;
+}
+
+.taskadd { display: grid; gap: .45rem; margin-bottom: var(--sp-4); }
+.taskadd__row { display: grid; grid-template-columns: 4.7rem 3.9rem minmax(0, 1fr); gap: .45rem; }
+.taskadd input {
+  min-width: 0;
+  padding: .6rem .95rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  font-size: var(--t-sm);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.taskadd__start, .taskadd__dur { text-align: center; }
+.taskadd input:hover { background: var(--tile-2); }
+.taskadd input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.taskadd input::placeholder { color: var(--faint); }
+.taskadd .btn { justify-content: center; }
+
+.tasks__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .6rem;
+}
+.tasks__head .eyebrow { margin-bottom: .5rem; }
+.tasks__clear {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--t-xs);
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color .18s var(--ease);
+}
+.tasks__clear:hover { color: var(--ink); }
+
+.tasks {
+  flex: 1 1 auto;
+  min-height: 4rem;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: .25rem;
+}
+.tasks:empty::after { content: 'Nothing to do yet'; }
+
+.task { border-radius: var(--r-md); font-size: var(--t-sm); }
+.task__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 1.4rem;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .7rem;
+  border-radius: var(--r-md);
+  transition: background-color .2s var(--ease);
+}
+.task__row:hover { background: var(--tile); }
+.task.is-editing { background: var(--tile); box-shadow: inset 0 0 0 1px var(--hair-soft); }
+.task.is-editing .task__row { background: none; }
+
+.task__tick {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  padding: 0;
+  border: 1.5px solid var(--sage);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color .18s var(--ease), border-color .18s var(--ease);
+}
+/* The box stays small — a 44px checkbox looks absurd — but the thing you
+   actually hit is 44px. This is the most-tapped control on the panel. */
+.task__tick::before {
+  content: '';
+  position: absolute;
+  inset: -13px;
+}
+.task__tick:hover { border-color: var(--moss); background: var(--tile-2); }
+.task__tick[aria-checked="true"] {
+  background: var(--c-productive);
+  border-color: var(--c-productive);
+}
+/* drawn rather than a glyph, so it never shifts with the font */
+.task__tick[aria-checked="true"]::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 1.5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--pill-fg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(43deg);
+}
+
+.task__body {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+.task__body:focus-visible { outline: 2px solid var(--c-productive); outline-offset: 2px; }
+.task__label {
+  color: var(--ink-2);
+  /* a column flex sizes its items to content, so without this the label runs
+     straight over the action beside it instead of ellipsising */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task__when {
+  flex: none;
+  font-size: var(--t-xs);
+  color: var(--faint);
+  letter-spacing: .03em;
+}
+
+.task__act { display: flex; align-items: center; }
+.task__btn {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--tile-2);
+  cursor: pointer;
+  padding: .22rem .55rem;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--moss-deep);
+  white-space: nowrap;
+  transition: background-color .18s var(--ease), color .18s var(--ease);
+}
+.task__btn:hover { background: var(--pill-bg); color: var(--pill-fg); }
+.task__note {
+  font-size: var(--t-xs);
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.task__del {
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--faint);
+  line-height: 1;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity .18s var(--ease), color .18s var(--ease), background-color .18s var(--ease);
+}
+.task__row:hover .task__del, .task__del:focus-visible { opacity: 1; }
+.task__del:hover { background: var(--hair-soft); color: var(--rust); }
+
+/* Done is done: struck through and stepped back, but still legible — you
+   should be able to read what you finished. */
+.task.is-done .task__label { text-decoration: line-through; color: var(--muted); }
+.task.is-done .task__when { color: var(--faint); }
+
+/* ── correcting a task ── */
+.taskedit { display: grid; gap: .45rem; padding: .1rem .7rem .7rem; animation: editorIn .18s var(--ease); }
+.taskedit__row { display: grid; grid-template-columns: 4.6rem 4.2rem minmax(0, 1fr); gap: .4rem; }
+.taskedit input {
+  min-width: 0;
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: .45rem .8rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  color: var(--ink);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.taskedit__start, .taskedit__dur { text-align: center; }
+.taskedit input:hover { background: var(--tile-2); }
+.taskedit input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.taskedit input::placeholder { color: var(--faint); }
+.taskedit__save { justify-content: center; padding: .4rem .9rem; font-size: var(--t-xs); }
+
+/* ══ the plan panel ═══════════════════════════════════════ */
+
+.plan__summary {
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: var(--rule) solid var(--hair);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ── the repeat control ────────────────────────────────────
+   One form serves both kinds, and this is the control that decides which. The
+   seven day chips stay hidden until "Pick", which is what lets one form fit
+   where two used to. */
+/* Label and pills share a line; the chips, when Pick reveals them, drop to
+   their own so they are not squeezed into the remainder. */
+.plan__repeat { margin-top: var(--sp-3); flex-wrap: wrap; }
+.plan__repeat .daychips { flex: 0 0 100%; margin-top: .45rem; justify-content: flex-end; }
+.plan__repeat .daychips[hidden] { display: none; }
+
+.plan__meta { display: flex; align-items: center; gap: var(--sp-2); }
+.plan__meta .tagpick--mini { flex: 1 1 auto; min-width: 0; }
+.plan__go { flex: none; }
+
+/* the panel must not outgrow the fold, so long lists scroll inside themselves */
+.plan__list {
+  display: grid;
+  align-content: start;        /* same reason as .entries above */
+  gap: .2rem;
+  margin-bottom: .5rem;
+  flex: 1 1 auto;
+  min-height: 3.4rem;
+  overflow-y: auto;
+}
+.plan__list:empty::after { content: 'Nothing yet'; }
+
+.planrow {
+  display: grid;
+  /* minmax(0,1fr) so the label keeps its share instead of being crushed to
+     nothing by whatever the days and action columns happen to need */
+  grid-template-columns: 5.6rem minmax(0, 1fr) 2.6rem auto 1.2rem;
+  align-items: center;
+  gap: .45rem;
+  padding: .4rem .5rem .4rem .8rem;
+  border-radius: var(--r-md);
+  font-size: var(--t-sm);
+  transition: background-color .2s var(--ease), opacity .2s var(--ease);
+}
+.planrow:hover { background: var(--tile); }
+.planrow.is-past { opacity: .55; }
+.planrow.is-otherday { opacity: .38; }
+.planrow.is-now { background: var(--tile-2); }
+
+.planrow__when {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: var(--t-xs);
+  letter-spacing: .01em;
+  color: var(--ink-2);
+}
+.planrow__label {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.planrow[data-tag="productive"] .swatch { background: var(--c-productive); }
+.planrow[data-tag="wasted"]     .swatch { background: var(--c-wasted); }
+.planrow[data-tag="sleep"]      .swatch { background: var(--c-sleep); }
+
+.planrow__days {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--c-booked);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.planrow__act { display: flex; align-items: center; }
+.planrow__log {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--tile-2);
+  color: var(--moss-deep);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: .22rem .5rem;
+  white-space: nowrap;
+  transition: background-color .2s var(--ease), color .2s var(--ease);
+}
+.planrow__log:hover { background: var(--moss-deep); color: var(--bone); }
+.planrow__now {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+}
+.planrow__del {
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--faint);
+  line-height: 1;
+  width: 1.3rem;
+  height: 1.3rem;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity .18s var(--ease), color .18s var(--ease);
+}
+.planrow:hover .planrow__del, .planrow__del:focus-visible { opacity: 1; }
+.planrow__del:hover { color: var(--rust); }
+
+/* the add forms */
+.plan__add { margin-bottom: .7rem; }
+.plan__row {
+  display: grid;
+  grid-template-columns: 4.2rem .5rem 4.2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .3rem;
+}
+.plan__dash { color: var(--faint); text-align: center; }
+.plan__time, .plan__label {
+  min-width: 0;
+  padding: .5rem .35rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  font-size: var(--t-sm);
+  text-align: center;
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.plan__label { text-align: left; padding-inline: .85rem; }
+.plan__time:hover, .plan__label:hover { background: var(--tile-2); }
+.plan__time:focus, .plan__label:focus {
+  outline: none; border-color: var(--moss); background: var(--tile-2);
+}
+.plan__go { padding: .5rem .8rem; }
+
+.plan__meta {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .4rem;
+  flex-wrap: wrap;
+}
+
+.daychips { display: flex; gap: .18rem; }
+.daychip {
+  width: 1.35rem;
+  height: 1.35rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--tile);
+  cursor: pointer;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--faint);
+  transition: background-color .2s var(--ease), color .2s var(--ease), transform .2s var(--bounce);
+}
+.daychip:hover { background: var(--tile-2); }
+.daychip:active { transform: scale(.9); }
+.daychip[aria-pressed="true"] { background: var(--pill-bg); color: var(--pill-fg); }
+
+.tagpick--mini {
+  flex: 1 1 auto;
+  padding: .2rem;
+  gap: .15rem;
+}
+.tagpick--mini .tag {
+  padding: .3rem .2rem;
+  font-size: var(--t-xs);
+}
+
+/* ── day setup ────────────────────────────────────────────
+   Set once a day rather than consulted, so it recedes: pushed to the foot of
+   the column, behind a rule, at a smaller size and a quieter colour. The four
+   totals own the top of the ledger, which is what anyone actually reads.
+
+   Open and un-collapsible above the phone breakpoint; js/app.js drives the
+   `open` attribute, this just hides the affordance. */
+.daysetup {
+  padding-top: var(--sp-2);
+  border-top: var(--rule) solid var(--hair-soft);
+}
+.daysetup__toggle { display: none; }
+.daysetup > *:first-of-type { margin-top: 0; }
+
+/* Named, so the block reads as settings rather than as more of the ledger. */
+.daysetup::before {
+  content: 'Day setup';
+  display: block;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: var(--sp-2);
+}
+/* Five control groups live in here now. It is a receded block by design, so
+   the rhythm inside it is tighter than the panels it sits under. */
+.daysetup .windowend { margin-top: var(--sp-2); }
+.daysetup .windowend__label { font-size: 10.5px; color: var(--faint); }
+.daysetup .windowend__opts button { padding: .3rem .2rem; font-size: var(--t-xs); }
+.daysetup .nightsleep { margin-top: var(--sp-3); }
+.daysetup .windowend--inline { margin-top: var(--sp-3); }
+.daysetup .nightsleep__label { font-size: 10.5px; color: var(--faint); }
+/* Instructions you read once, in a block that has already receded. */
+.daysetup .windowend__note,
+.daysetup .nightsleep__note { font-size: 10.5px; line-height: 1.45; margin-top: .3rem; }
+
+/* ── phone ──────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .ledger { padding: .8rem .7rem 1rem; border-radius: var(--r-lg); }
+  .lrow { padding: .55rem .6rem; }
+
+  /* the <summary> is the label on a phone, so the printed one would double up,
+     and nothing stretches the ledger at this width */
+  .daysetup { margin-top: 0; padding-top: 0; border-top: none; }
+  .daysetup::before { display: none; }
+  .daysetup .windowend__label, .daysetup .nightsleep__label { font-size: var(--t-xs); }
+  .daysetup .windowend__opts button { font-size: var(--t-sm); }
+
+  .daysetup__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: .8rem;
+    padding: .8rem .7rem;
+    min-height: 44px;
+    border-radius: var(--r-md);
+    background: var(--tile);
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .daysetup__toggle::-webkit-details-marker { display: none; }
+  .daysetup__toggle::after {
+    content: '›';
+    font-size: var(--t-md);
+    color: var(--faint);
+    transition: transform .2s var(--ease);
+  }
+  .daysetup[open] .daysetup__toggle::after { transform: rotate(90deg); }
+  .daysetup[open] .daysetup__toggle { margin-bottom: .3rem; }
+
+  .ledger__budget { border-top: none; padding-top: .6rem; }
+  .windowend, .nightsleep { margin-top: 1rem; }
+  .windowend__opts button { min-height: 44px; }
+  .nightsleep__pair { grid-template-columns: 1fr 1fr; }
+  .nightsleep__set { grid-column: 1 / -1; justify-content: center; }
+  .nightsleep__field input { min-height: 44px; }
+
+  /* ── the logbook ── */
+  /* backdrop-filter on an ancestor makes it the containing block for any
+     position:fixed descendant, which pinned the quick-add bar to the panel
+     instead of the viewport. The glass moves onto the bar itself instead. */
+  .logbook {
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .booktabs button { min-height: 44px; }
+
+  /* Quick-add rides in the thumb zone while everything else scrolls past it.
+     It sits inside #bookLog, so it vanishes with the panel on the Plan tab. */
+  .quickadd {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    gap: .45rem;
+    padding: .6rem .7rem calc(.6rem + env(safe-area-inset-bottom, 0px));
+    background: var(--glass);
+    border-top: 1px solid var(--glass-edge);
+    box-shadow: 0 -12px 30px -20px rgba(20, 45, 28, .5);
+    backdrop-filter: blur(22px) saturate(1.15);
+    -webkit-backdrop-filter: blur(22px) saturate(1.15);
+  }
+  .quickadd .chips { margin-top: 0; }
+  .tag { min-height: 44px; justify-content: center; }
+  .chip { min-height: 44px; }
+
+  .custom { margin-top: 0; }
+  /* how long, then when — the label and the button take a row each */
+  .custom__row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .45rem; }
+  .custom__row .custom__label, .custom__row .btn { grid-column: 1 / -1; }
+  .custom__row input, .custom__row .btn { min-height: 44px; }
+  .timer { min-height: 52px; }
+
+  /* one page scroll, never a scroll region nested inside it */
+  .entries, .plan__list { flex: 0 0 auto; min-height: 0; overflow: visible; mask-image: none; -webkit-mask-image: none; }
+  .entry__row { padding: .6rem .7rem; grid-template-columns: 2.9rem 1fr auto 2.75rem; }
+  .editor { padding: 0 .7rem .7rem; }
+  /* fixed tracks would leave the label as narrow as the two boxes above it,
+     so the second column takes the slack and the label gets its own full row */
+  .editor__row { grid-template-columns: 4.6rem minmax(0, 1fr); }
+  .editor__row--acts { grid-template-columns: minmax(0, 1fr) auto; }
+  .editor__label { grid-column: 1 / -1; }
+  .editor input, .editor .btn { min-height: 44px; }
+  /* Shown by width as well as by pointer: resizing a desktop window to phone
+     size keeps a mouse, so `hover: none` never fires there and these would
+     stay invisible exactly where they are hardest to reach. */
+  .entry__del, .planrow__del { width: 44px; height: 44px; font-size: 18px; opacity: 1; }
+
+  /* ── tasks ── */
+  .tasks { flex: 0 0 auto; min-height: 0; overflow: visible; }
+  .taskadd__row { grid-template-columns: 4.7rem 4.2rem minmax(0, 1fr); }
+  .taskadd input, .taskadd .btn { min-height: 44px; }
+  .task__row { padding: .55rem .6rem; grid-template-columns: auto minmax(0, 1fr) auto 2.75rem; }
+  /* At this width the label, the time and the action fight over one line and
+     the label always loses — "email the client about the invoice" rendered as
+     "em⋯". Give the label the line and drop the time beneath it. */
+  .task__body { flex-direction: column; align-items: stretch; gap: .05rem; }
+  .task__tick { width: 24px; height: 24px; }
+  .task__tick::before { inset: -10px; }
+  .task__tick[aria-checked="true"]::after { left: 7px; top: 3px; width: 6px; height: 11px; }
+  .task__btn { min-height: 44px; padding-inline: .9rem; }
+  .task__del { width: 44px; height: 44px; font-size: 18px; opacity: 1; }
+  .taskedit { padding: 0 .6rem .6rem; }
+  .taskedit__row { grid-template-columns: 4.6rem minmax(0, 1fr); }
+  .taskedit__save { grid-column: 1 / -1; }
+  .taskedit input, .taskedit .btn { min-height: 44px; }
+
+  /* ── the plan panel ── */
+  /* Inline pays for itself on the desktop column, where vertical space is the
+     scarce thing. At 390px the horizontal space is scarce instead and the same
+     rows push the page sideways, so they stack back. */
+  .windowend--inline { display: block; }
+  .windowend--inline .windowend__label { margin-bottom: .35rem; }
+  .windowend--inline .windowend__opts { grid-auto-columns: 1fr; }
+  .plan__repeat .windowend__opts button { min-height: 44px; }
+  .plan__repeat .daychips { justify-content: space-between; gap: .15rem; flex-wrap: wrap; }
+  .planrow {
+    grid-template-columns: 5.6rem minmax(0, 1fr) auto 2.75rem;
+    padding: .5rem .3rem .5rem .6rem;
+  }
+  .planrow__days { display: none; }
+  .planrow__log { min-height: 44px; padding-inline: .8rem; }
+  .plan__row { grid-template-columns: 1fr 1fr; }
+  .plan__dash { display: none; }
+  .plan__label { grid-column: 1 / -1; text-align: center; }
+  .plan__go { grid-column: 1 / -1; justify-content: center; }
+  .plan__time, .plan__label, .plan__go { min-height: 44px; }
+  .daychip { width: 44px; height: 44px; font-size: var(--t-sm); }
+  .daychips { gap: .3rem; }
+  .tagpick--mini { width: 100%; }
+  .tagpick--mini .tag { min-height: 40px; }
+}

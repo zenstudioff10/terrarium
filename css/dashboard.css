@@ -1,0 +1,475 @@
+/* dashboard.css — the record. Wide ruled rows, deliberately a different
+   rhythm from the fold above it. No cards. */
+
+/* the same pane as the Today view, so the two tabs read as one product */
+.dash {
+  padding: clamp(1.2rem, 2.6vh, 2rem) clamp(1.1rem, 2vw, 1.9rem) clamp(1.6rem, 3vh, 2.4rem);
+  margin-top: clamp(.5rem, 1.4vh, 1rem);
+  border-radius: var(--r-2xl);
+  background: var(--canvas);
+  border: 1px solid var(--canvas-edge);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--highlight);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  min-height: calc(100dvh - 8.5rem);
+}
+
+.dash__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.8rem;
+}
+.dash__title {
+  font-family: var(--display);
+  font-size: var(--t-xl);
+  font-weight: 400;
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+.dash__range {
+  margin-top: .45rem;
+  font-size: var(--t-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.periods {
+  display: flex;
+  gap: .2rem;
+  padding: .3rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.periods button {
+  padding: .42rem 1rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--faint);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.periods button:hover { color: var(--ink-2); }
+.periods button:active { transform: scale(.94); }
+.periods button.is-on {
+  color: var(--pill-fg);
+  background: var(--pill-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── totals ────────────────────────────────────────────── */
+/* Six identical tiles let *untracked* — the largest number here and the least
+   useful — win the eye every time. Kept and lost lead; the rest support. */
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: .5rem;
+}
+@media (min-width: 1000px) {
+  .totals {
+    grid-template-columns:
+      repeat(2, minmax(0, 1.32fr))
+      repeat(4, minmax(0, 1fr));
+  }
+}
+.tot {
+  padding: var(--sp-4) var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--sunk);
+  transition: background-color .2s var(--ease);
+}
+.tot:hover { background: var(--tile); }
+
+/* The tiles take the same colours as the chart below them, so the two finally
+   speak one language instead of six grey numbers over a green bar. */
+.tot--hero dd { font-size: var(--fig-2); }
+.tot[data-k] dt::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: .45rem;
+  border-radius: 50%;
+  background: var(--tot-c, var(--faint));
+  vertical-align: baseline;
+}
+.tot[data-k] dd { color: var(--tot-c, var(--canopy)); }
+.tot[data-k="kept"]      { --tot-c: var(--c-productive); }
+.tot[data-k="lost"]      { --tot-c: var(--c-wasted); }
+.tot[data-k="sleep"]     { --tot-c: var(--c-sleep); }
+.tot[data-k="untracked"] { --tot-c: var(--c-untracked); }
+.tot dt {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: .45rem;
+}
+.tot dd {
+  font-family: var(--display);
+  font-size: var(--fig-3);
+  font-weight: 700;
+  color: var(--canopy);
+  line-height: 1.1;
+  letter-spacing: var(--track-tight);
+}
+.tot dd small {
+  font-family: var(--sans);
+  font-size: var(--t-xs);
+  color: var(--muted);
+  letter-spacing: .03em;
+  display: block;
+  margin-top: .25rem;
+}
+
+/* ── blocks ────────────────────────────────────────────── */
+.dash__block { padding: 2.2rem 0 0; }
+
+/* The rail used 322px of a 1260px pane while the bar beneath it used all of it.
+   Pairing it with its own breakdown fills the width with content rather than by
+   stretching one chart across it. */
+.dash__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(1.2rem, 3vw, 3rem);
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .dash__pair { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+.dash__h3 {
+  font-family: var(--display);
+  font-size: var(--t-md);
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: baseline;
+  gap: .8rem;
+  flex-wrap: wrap;
+}
+.dash__hint {
+  font-family: var(--sans);
+  font-size: var(--t-xs);
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.rail__plot {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(4px, .6vw, 12px);
+  height: 180px;
+}
+.rail__col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rail__stack {
+  flex: 1 1 auto;
+  width: min(100%, 34px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--tile);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  transition: background-color .2s var(--ease);
+}
+.rail__col:hover .rail__stack { background: var(--tile-2); }
+.rail__seg { width: 100%; transition: height .8s var(--ease); }
+.rail__seg--productive { background: var(--c-productive); }
+.rail__seg--wasted     { background: var(--c-wasted); }
+.rail__seg--sleep      { background: var(--c-sleep); opacity: .45; }
+.rail__label {
+  height: 1.4rem;
+  line-height: 1.4rem;
+  text-align: center;
+  font-size: var(--t-xs);
+  letter-spacing: .04em;
+  color: var(--faint);
+}
+.rail__empty, .leak__empty, .ratio__empty {
+  font-family: var(--display);
+  color: var(--faint);
+  font-size: var(--t-base);
+  padding: var(--sp-4) 0;
+}
+
+.ratio__bar {
+  display: flex;
+  gap: 3px;
+  height: 30px;
+  background: var(--tile);
+  border-radius: var(--r-pill);
+  padding: 3px;
+}
+.ratio__seg { height: 100%; border-radius: var(--r-pill); transition: width 1s var(--ease); }
+.ratio__seg--productive { background: var(--c-productive); }
+.ratio__seg--wasted     { background: var(--c-wasted); }
+.ratio__seg--sleep      { background: var(--c-sleep); opacity: .45; }
+.ratio__seg--untracked  { background: var(--ink); opacity: .09; }
+.ratio__key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+  margin-top: .9rem;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+.ratio__key span { display: flex; align-items: center; gap: .45rem; }
+.ratio__key b { font-family: var(--display); font-weight: 400; color: var(--ink); }
+.ratio__verdict {
+  font-family: var(--display);
+  color: var(--muted);
+  margin-top: 1rem;
+  font-size: var(--t-base);
+}
+
+/* ── where it went ─────────────────────────────────────── */
+.labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.2rem, 3vw, 2.6rem);
+}
+.labels__head {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: .5rem;
+}
+.labels__none, .labels__more {
+  font-size: var(--t-xs);
+  color: var(--faint);
+  margin-top: .35rem;
+}
+
+.labelrow {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .6rem;
+  padding: .3rem 0;
+  font-size: var(--t-sm);
+}
+.labelrow__name {
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.labelrow__track {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  overflow: hidden;
+}
+.labelrow__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width .8s var(--ease);
+}
+.labelrow[data-tag="productive"] .labelrow__fill { background: var(--c-productive); }
+.labelrow[data-tag="wasted"]     .labelrow__fill { background: var(--c-wasted); }
+.labelrow__val {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── leak clock ────────────────────────────────────────── */
+.leak__grid {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: clamp(4px, .6vw, 9px);
+  height: 78px;
+}
+.leak__cell {
+  height: 100%;
+  background: var(--c-wasted);
+  border-radius: var(--r-md);
+  transition: transform .2s var(--bounce);
+}
+/* hours that only exist on a crammed night */
+.leak__cell--late { background: var(--c-sleep); }
+.leak__cell:hover { transform: scale(1.06); }
+.leak__hours {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 3px;
+  margin-top: .45rem;
+  font-size: var(--t-xs);
+  color: var(--faint);
+  text-align: center;
+  letter-spacing: .03em;
+}
+.leak__note { font-size: var(--t-sm); color: var(--muted); margin-top: .9rem; }
+
+/* ── data ──────────────────────────────────────────────── */
+.dash__data {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.6rem;
+  padding-top: 1.3rem;
+  border-top: var(--rule) solid var(--hair);
+}
+.dash__datanote { font-size: var(--t-sm); color: var(--muted); }
+.savestate { font-weight: 600; color: var(--ink-2); }
+.savestate.is-bad { color: var(--rust); }
+.savenote { margin-top: .15rem; }
+
+/* Inline rather than a browser modal — a destructive replace deserves a
+   moment's thought, not a reflex OK. */
+.confirm {
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--tile-2);
+  border: 1.5px solid var(--hair);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.confirm__msg { font-size: var(--t-sm); color: var(--ink); max-width: 46ch; }
+.confirm__acts { display: flex; gap: .5rem; }
+.dash__databtns { display: flex; gap: .5rem; }
+
+/* ── phone ──────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .dash {
+    min-height: 0;
+    padding: 1rem .85rem 1.6rem;
+    margin-top: .4rem;
+    border-radius: var(--r-lg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .dash__head { margin-bottom: 1.1rem; gap: .7rem; }
+  .dash__title { font-size: var(--t-lg); }
+  .periods { width: 100%; }
+  .periods button { flex: 1 1 0; padding: .5rem .3rem; min-height: 44px; }
+
+  .totals { grid-template-columns: 1fr 1fr; gap: .4rem; }
+  .tot { padding: .8rem .85rem; }
+  .tot dd { font-size: var(--t-md); }
+
+  .dash__block { padding-top: 1.6rem; }
+  .rail__plot { height: 130px; gap: 2px; }
+  .rail__stack { width: min(100%, 18px); }
+  .rail__label { font-size: 9px; }
+  .leak__grid { height: 54px; gap: 2px; }
+  .leak__cell { border-radius: var(--r-sm); }
+  .leak__hours { font-size: 9px; gap: 2px; }
+  .ratio__key { gap: .8rem; font-size: var(--t-xs); }
+  .labels { grid-template-columns: 1fr; gap: 1.2rem; }
+  .labelrow { grid-template-columns: minmax(0, 6rem) minmax(0, 1fr) auto; }
+
+  .dash__data { margin-top: 1.6rem; }
+  .dash__databtns { width: 100%; }
+  .dash__databtns .btn { flex: 1 1 0; justify-content: center; }
+}
+
+/* ══ an opened day ════════════════════════════════════════ */
+
+.rail__col--open { cursor: pointer; }
+.rail__col--open:focus-visible { outline: 2px solid var(--c-productive); outline-offset: 2px; border-radius: var(--r-sm); }
+.rail__col--open.is-open .rail__stack { outline: 2px solid var(--c-productive); outline-offset: 2px; }
+.rail__col--open.is-open .rail__label { color: var(--ink); font-weight: 600; }
+
+.dayopen {
+  /* a reading column, not the full width of the record — three short fields
+     stretched across 1300px is unreadable */
+  max-width: 620px;
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) 0 var(--sp-1);
+  border-top: 1px solid var(--hair-soft);
+  animation: dayopenIn .2s var(--ease);
+}
+@keyframes dayopenIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+.dayopen__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 0 .85rem .3rem;
+}
+.dayopen__head h4 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.dayopen__close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--faint);
+  font-size: 18px;
+  line-height: 1;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  transition: background-color .18s var(--ease), color .18s var(--ease);
+}
+.dayopen__close:hover { background: var(--hair-soft); color: var(--ink); }
+
+/* the shared entry list, without the panel's scroll box and fade */
+.entries--flat { max-height: none; overflow: visible; mask-image: none; -webkit-mask-image: none; }
+
+.dayadd { display: grid; gap: .5rem; padding: .6rem .85rem .2rem; }
+.dayadd__row { display: grid; grid-template-columns: 4.6rem 4.4rem minmax(0, 1fr); gap: .4rem; }
+.dayadd__row--acts { grid-template-columns: auto auto; justify-content: space-between; align-items: center; }
+.dayadd input {
+  min-width: 0;
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: .45rem .8rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+  color: var(--ink);
+  transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.dayadd input:hover { background: var(--tile-2); }
+.dayadd input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
+.dayadd input::placeholder { color: var(--faint); }
+
+@media (max-width: 700px) {
+  .dayadd__row { grid-template-columns: 4.6rem minmax(0, 1fr); }
+  .dayadd__row--acts { grid-template-columns: minmax(0, 1fr) auto; }
+  .dayadd__label { grid-column: 1 / -1; }
+  .dayadd input, .dayadd .btn, .dayopen__close { min-height: 44px; }
+  .dayopen__close { width: 44px; }
+}
+
+/* Said in words rather than drawn as a fourth segment — see renderRatio. */
+.ratio__untracked {
+  margin-top: .4rem;
+  font-size: var(--t-xs);
+  color: var(--faint);
+  letter-spacing: .02em;
+}

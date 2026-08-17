@@ -1,0 +1,5 @@
+# The site is reachable by anyone holding the URL — GitHub Pages has no way to
+# gate that on a personal account. This keeps it out of search results so the
+# URL stays the only way in.
+User-agent: *
+Disallow: /

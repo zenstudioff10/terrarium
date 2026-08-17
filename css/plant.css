@@ -1,0 +1,573 @@
+/* plant.css — the vessel, the foliage, and the two things they measure. */
+
+.stagecentre {
+  position: relative;          /* the light pool anchors to this */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* The shelf anchors the top and the day strip the bottom, so the column has
+     two real edges to line up with the panels either side of it. */
+  justify-content: space-between;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* The centre is lit rather than boxed. A card here would turn two objects on a
+   bench into a picture of them; light behind them reads as elevation and keeps
+   them objects. Bounded to the jar area — 34% off the bottom — so it never
+   washes out the figures underneath.
+
+   The tint follows the day: --pool-a/b are set per data-state in tokens.css,
+   from a warm gold-green while the day is whole to almost nothing once it is
+   spent. js/app.js puts the state on this element. */
+.stagecentre::before {
+  content: '';
+  position: absolute;
+  inset: -6% -10% 34%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(58% 56% at 50% 44%,
+    var(--pool-a, transparent) 0%,
+    var(--pool-b, transparent) 48%,
+    rgba(0, 0, 0, 0) 76%);
+  transition: background 1.4s var(--ease);
+}
+
+.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* two jars on one shelf: the left one drains, the right one grows */
+.shelf {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(.6rem, 3vw, 2.6rem);
+  width: 100%;
+}
+
+.vessel {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+}
+
+.plant {
+  /* The jars are the whole idea of this thing and were reading as decoration
+     next to the numerals — 176x251 inside a 524x600 column. */
+  height: clamp(240px, 40vh, 440px);
+  width: auto;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* ── foliage ───────────────────────────────────────────── */
+.stem, .tip {
+  fill: none;
+  stroke: var(--foliage);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke 1.1s var(--ease), fill 1.1s var(--ease);
+}
+.tip { fill: var(--foliage); stroke: none; }
+
+.leaf { transition: opacity .8s var(--ease); }
+.leaf__blade {
+  fill: var(--foliage);
+  transition: fill 1.1s var(--ease);
+}
+.leaf:nth-child(even) .leaf__blade { fill: var(--foliage-2); }
+.leaf__rib {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 1.1;
+  opacity: .34;
+  stroke-linecap: round;
+}
+
+.leaf__droop {
+  transform-origin: 0 0;
+  transform: rotate(0deg);
+  transition: transform 1.1s var(--ease);
+}
+.leaf.is-spent { opacity: .26; }
+.leaf.is-spent .leaf__blade { fill: var(--sage); }
+.leaf.is-spent .leaf__droop { transform: rotate(var(--droop, 40deg)) scale(.86); }
+
+/* Vessel B starts bare and grows. An ungrown leaf is not a sad leaf — it is a
+   leaf that has not happened yet, so it is absent rather than wilted. */
+.leaf.is-ungrown { opacity: 0; }
+.leaf.is-ungrown .leaf__droop { transform: scale(.2); transition-timing-function: var(--ease); }
+.plant--grown .leaf__droop { transition: transform .55s var(--bounce); }
+
+/* Growth is growth: vessel B's foliage never changes colour. Its bad news is
+   told by the jar filling up, not by the leaves going brown. */
+.plant--grown .leaf__blade,
+.plant--grown .stem,
+.plant--grown .tip { --foliage: var(--c-productive); --foliage-2: var(--moss-deep); }
+.plant--grown .stem { stroke: var(--c-productive); }
+.plant--grown .tip  { fill: var(--c-productive); }
+
+.leaf__sway {
+  transform-origin: 0 0;
+  animation: sway 8s var(--ease) infinite;
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.4deg); }
+  50%      { transform: rotate(2.4deg); }
+}
+
+/* ── glass ─────────────────────────────────────────────── */
+.glass__edge {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  opacity: .26;
+  stroke-linejoin: round;
+}
+
+/* At dusk the white glass fill turns into a grey slab against the dark ground,
+   so the body drops back and the outline carries the shape instead. */
+body[data-dusk="1"] .glass__body,
+body[data-dusk="auto"] .glass__body { opacity: .3; }
+body[data-dusk="1"] .glass__edge,
+body[data-dusk="auto"] .glass__edge { opacity: .34; }
+body[data-dusk="1"] .leaf.is-spent,
+body[data-dusk="auto"] .leaf.is-spent { opacity: .4; }
+.glass__rim {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  opacity: .2;
+}
+.glare { fill: none; stroke: #fff; opacity: .34; }
+.glare--thin { opacity: .2; }
+.glare--edge { opacity: .15; }
+body[data-dusk="1"] .glare, body[data-dusk="auto"] .glare { opacity: .1; }
+body[data-dusk="1"] .glare--wide, body[data-dusk="auto"] .glare--wide { opacity: .16; }
+
+/* Stronger now there is light behind the shelf: the jars have to land on
+   something, or lit-from-behind just reads as floating. */
+.shadow-stop-a { stop-color: rgba(27, 51, 37, .34); }
+.shadow-stop-b { stop-color: rgba(27, 51, 37, 0); }
+body[data-dusk="1"] .shadow-stop-a, body[data-dusk="auto"] .shadow-stop-a { stop-color: rgba(0, 0, 0, .6); }
+body[data-dusk="1"] .shadow-stop-b, body[data-dusk="auto"] .shadow-stop-b { stop-color: rgba(0, 0, 0, 0); }
+
+/* ── water: what you have left ─────────────────────────── */
+.water-stop-a { stop-color: var(--water-a); }
+.water-stop-b { stop-color: var(--water-b); }
+
+.water {
+  transform: translateY(var(--water-y, 306px));
+  transition: transform 1.2s var(--ease);
+}
+.water__wave { animation: drift 9s linear infinite; }
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-120px); }
+}
+.water__line {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.6;
+  opacity: .4;
+  animation: drift 9s linear infinite;
+}
+body[data-dusk="1"] .water__line, body[data-dusk="auto"] .water__line { opacity: .22; }
+
+/* ── roots: what you actually kept ─────────────────────── */
+/* Roots hold their green whatever the day is doing — productive time is
+   productive time, and it must never drift toward the colour of waste. */
+.roots path {
+  fill: none;
+  stroke: var(--c-productive);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: .72;
+  /* The gap has to outrun the path. With a 100/100 pattern, the staggered
+     offsets below can push past 100 and wrap, which paints a stray dot at the
+     root tip instead of hiding the root. */
+  stroke-dasharray: 100 1000;
+  stroke-dashoffset: var(--root-off, 100);
+  transition: stroke-dashoffset 1.3s var(--ease);
+}
+.roots path:nth-child(2) { stroke-dashoffset: calc(var(--root-off, 100) + 6); }
+.roots path:nth-child(4) { stroke-dashoffset: calc(var(--root-off, 100) + 12); opacity: .48; }
+.roots path:nth-child(5) { stroke-dashoffset: calc(var(--root-off, 100) + 14); opacity: .48; }
+
+/* ── sediment: what you lost, settled ──────────────────── */
+.sediment {
+  transform: translateY(var(--sed-y, 548px));
+  transition: transform 1.2s var(--ease);
+}
+.sediment__body { fill: var(--ochre); opacity: .62; }
+.sediment__crust {
+  fill: none;
+  stroke: var(--ochre);
+  stroke-width: 2;
+  opacity: .85;
+}
+
+/* ── booked time: the slice of what is left that is spoken for ──
+   Texture rather than a fourth hue — ochre already means wasted and blue
+   already means sleep, so hatching says "reserved" without a new colour. */
+.hatch-bg { fill: var(--c-booked); opacity: .22; }
+.hatch-line { stroke: var(--c-booked); stroke-width: 3.2; opacity: .42; }
+
+.booked {
+  transform: translateY(var(--sed-y, 552px));
+  transition: transform 1.2s var(--ease);
+}
+.booked__body { fill: url(#bookedHatch); }
+.booked__crust {
+  fill: none;
+  stroke: var(--c-booked);
+  stroke-width: 2;
+  opacity: .75;
+}
+
+/* ── unlogged time: rides on top of the sludge ─────────────
+   The sludge is painted after this, so only the band between the two
+   surfaces shows. Grey rather than ochre — it cost the same, but you
+   did not choose it, you just never wrote it down. */
+.haze {
+  transform: translateY(var(--sed-y, 552px));
+  transition: transform 1.2s var(--ease);
+}
+.haze__body { fill: var(--faint); opacity: .3; }
+.haze__crust {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 2;
+  opacity: .5;
+  stroke-dasharray: 7 6;
+}
+
+/* ── graduations ───────────────────────────────────────── */
+.ticks line { stroke: var(--ink); opacity: .18; stroke-width: 2; }
+.ticks text {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-anchor: end;
+  fill: var(--ink);
+  opacity: .3;
+}
+
+/* ── nap marker ────────────────────────────────────────── */
+.napmark path { fill: var(--c-sleep); opacity: .62; }
+.napmark text {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-anchor: start;
+  fill: var(--muted);
+}
+.napmark[hidden] { display: none; }
+
+/* ── the two figures ───────────────────────────────────── */
+.readout { text-align: center; margin-top: -.2rem; }
+
+.readout__figure {
+  font-family: var(--display);
+  font-size: var(--fig-2);
+  font-weight: 700;
+  line-height: .95;
+  letter-spacing: var(--track-tight);
+  color: var(--ink);
+  /* A grid, not a flex row: `align-content: end` drops the line to the bottom
+     of a shared box, so a fig-1 and a fig-2 figure share a baseline across the
+     shelf. With flex the smaller one floats to the top of its box instead. */
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: center;
+  align-items: baseline;
+  align-content: end;
+  gap: .04em;
+  min-height: var(--fig-1);
+}
+.readout__unit { font-size: .4em; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+
+.readout__label {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: .45rem;
+}
+.readout__sub {
+  font-size: var(--t-xs);
+  color: var(--muted);
+  margin-top: .4rem;
+  min-height: 1.2em;
+}
+
+/* The left jar carries two totals: everything left, and what is actually yours.
+   They are only different once something is booked, so the second half appears
+   when there is a difference to show and is absent when there is not — it used
+   to print the same numeral twice, side by side, at two different sizes. */
+.readout--pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+}
+.readout--pair.is-split { grid-template-columns: 1fr 1fr; }
+.readout--pair:not(.is-split) .readout__half:last-of-type { display: none; }
+.readout--pair .readout__half:first-of-type .readout__figure { font-size: var(--fig-1); }
+.readout--pair .readout__half:last-of-type  .readout__figure { font-size: var(--fig-2); }
+.readout--pair .readout__half:last-of-type  .readout__num { color: var(--moss-deep); }
+.readout__num { color: var(--canopy); }
+.readout__sub--wide { grid-column: 1 / -1; }
+
+/* ── what the two add up to ────────────────────────────── */
+/* This is the number the whole page is for — the most productive hours you can
+   still end the day on — and it used to be set smaller than everything around
+   it, at the end of four stacked lines of grey type that said "out of reach"
+   twice. Eyebrow, figure, one sentence, one status. */
+.ceiling {
+  text-align: center;
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: var(--rule) solid var(--hair-soft);
+  width: 100%;
+}
+
+.ceiling__line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .15rem;
+}
+.ceiling__label {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.ceiling__val {
+  font-family: var(--display);
+  font-size: var(--fig-1);
+  font-weight: 700;
+  line-height: .95;
+  color: var(--canopy);
+  letter-spacing: var(--track-tight);
+}
+.readout__verdict {
+  font-family: var(--display);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+  margin: .55rem auto 0;
+  max-width: 34ch;
+}
+/* the target status, and only that — the loss figures are already the fourth
+   row of the ledger and the grey band in the right-hand jar */
+.ceiling__break {
+  font-size: var(--t-xs);
+  letter-spacing: .03em;
+  color: var(--muted);
+  margin-top: .45rem;
+  min-height: 1.1em;
+}
+
+/* ── the ghost, and the target ─────────────────────────── */
+
+/* The same plant, fully grown, behind the real one. Faint enough to read as a
+   possibility rather than as a second plant. */
+.foliage--ghost {
+  opacity: .085;
+  pointer-events: none;
+}
+.foliage--ghost .leaf { opacity: 1 !important; }
+.foliage--ghost .leaf__droop { transform: none !important; }
+body[data-dusk="1"] .foliage--ghost,
+body[data-dusk="auto"] .foliage--ghost { opacity: .12; }
+
+.targetline line {
+  stroke: var(--c-productive);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+  opacity: .5;
+}
+.targetline text {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  fill: var(--c-productive);
+  opacity: .65;
+}
+.targetline[data-met="true"] line { stroke-dasharray: none; opacity: .8; }
+.targetline[data-met="true"] text { opacity: .9; }
+
+/* ── arrival ───────────────────────────────────────────────
+   Staggered, and the jars land last so the eye reaches the figures first.
+   base.css blanks all of this under prefers-reduced-motion. */
+.is-arriving > * { animation: riseIn .5s var(--ease) both; }
+.is-arriving > .ledger      { animation-delay: .02s; }
+.is-arriving > .logbook     { animation-delay: .06s; }
+.is-arriving > .stagecentre { animation-delay: .10s; }
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── the day, laid out flat ────────────────────────────── */
+.daystrip { width: min(100%, 560px); margin-top: 1.1rem; }
+.daystrip svg { width: 100%; height: auto; overflow: visible; }
+
+.strip__track { fill: var(--ink); opacity: .07; }
+.strip__spent { fill: var(--ink); opacity: .11; }
+body[data-dusk="1"] .strip__track, body[data-dusk="auto"] .strip__track { opacity: .12; }
+body[data-dusk="1"] .strip__spent, body[data-dusk="auto"] .strip__spent { opacity: .2; }
+.strip__now   { stroke: var(--terracotta); stroke-width: 1.4; }
+.strip__nowdot { fill: var(--terracotta); }
+.strip__mark  { opacity: .8; }
+.strip__mark--productive { fill: var(--c-productive); }
+.strip__mark--wasted     { fill: var(--c-wasted); }
+.strip__mark--sleep      { fill: var(--c-sleep); }
+/* the stretch past 20:00, and the morning slept through */
+.strip__night { fill: var(--c-sleep); opacity: .18; }
+.strip__asleep { fill: var(--c-sleep); opacity: .3; }
+.strip__booked { fill: var(--c-booked); opacity: .55; }
+.strip__divide { stroke: var(--c-sleep); stroke-width: 1.6; opacity: .55; }
+.strip__hour--late { fill: var(--c-sleep); opacity: .9; }
+
+.nightline[hidden] { display: none; }
+.nightline line {
+  stroke: var(--c-sleep);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 5;
+  opacity: .7;
+}
+.nightline text {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  fill: var(--c-sleep);
+  opacity: .85;
+}
+
+.strip__hour {
+  font-family: var(--sans);
+  font-size: 17px;
+  letter-spacing: .1em;
+  fill: var(--faint);
+}
+.strip__rule { stroke: var(--ink); opacity: .12; stroke-width: 1; }
+
+/* ── phone ────────────────────────────────────────────────
+   Numbers first, jars beneath. The captions live inside each <figure>, so the
+   figures become `display: contents` and the shelf lays their children out
+   directly — captions in row one, jars in row two. No markup moves, and both
+   aria-live readouts keep working. */
+@media (max-width: 700px) {
+  .stagecentre { max-width: none; }
+
+  .shelf {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "numA numB"
+      "jarA jarB";
+    align-items: end;
+    column-gap: .8rem;
+    row-gap: .4rem;
+  }
+  .vessel { display: contents; }
+  .vessel:nth-of-type(1) .readout { grid-area: numA; }
+  .vessel:nth-of-type(1) .plant   { grid-area: jarA; }
+  .vessel:nth-of-type(2) .readout { grid-area: numB; }
+  .vessel:nth-of-type(2) .plant   { grid-area: jarB; }
+
+  .plant { height: clamp(150px, 30vh, 230px); justify-self: center; }
+  /* top-aligned, so the three figures share a baseline. Bottom-aligning
+     dropped the single right-hand figure below the left pair, because that
+     caption is taller. */
+  .readout { margin-top: 0; align-self: start; }
+  .readout__figure { min-height: var(--fig-1); }
+  /* the cells are roughly a quarter of the screen — "HOURS LEFT" has to fit
+     on one line or the labels stop lining up */
+  .readout__label {
+    margin-top: .2rem;
+    font-size: 9px;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .readout__sub { font-size: 10px; line-height: 1.35; }
+
+  .ceiling { margin-top: 1rem; padding-top: .8rem; }
+  .ceiling__line { gap: .45rem; }
+  .readout__verdict { margin-top: .6rem; font-size: var(--t-xs); }
+
+  .daystrip { width: 100%; margin-top: 1rem; }
+
+  /* The pool hangs 10% past each side of the column. The desktop pane's padding
+     swallows that; at 390px it pushed the whole page 8px sideways instead, so
+     here it stays inside its own width. */
+  .stagecentre::before { inset: -4% 0 34%; }
+  .strip__hour { font-size: 22px; }
+  .ticks text { display: none; }
+}
+
+/* ── when the log goes quiet ───────────────────────────── */
+
+.nudge {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  justify-content: center;
+  margin: .8rem auto 0;
+  padding: .35rem .35rem .35rem .8rem;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: var(--r-pill, 999px);
+  background: color-mix(in srgb, var(--c-wasted) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-wasted) 28%, transparent);
+  animation: nudgeIn .3s var(--ease);
+}
+@keyframes nudgeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.nudge__act {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--t-xs);
+  letter-spacing: .01em;
+  color: var(--ink-2);
+  padding: .2rem 0;
+  text-align: left;
+  border-radius: var(--r-sm);
+}
+.nudge__act:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.nudge__hide {
+  border: none;
+  background: none;
+  cursor: pointer;
+  /* --faint reads at 3.1:1 here, and this one is a control you have to find */
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  flex: none;
+  transition: background-color .18s var(--ease), color .18s var(--ease);
+}
+.nudge__hide:hover { background: var(--hair-soft); color: var(--ink); }
+
+@media (max-width: 700px) {
+  .nudge { padding-left: .7rem; }
+  .nudge__hide { width: 34px; height: 34px; }
+}

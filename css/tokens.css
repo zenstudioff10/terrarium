@@ -1,0 +1,259 @@
+/* tokens.css — palette, type, rhythm. Everything else reads from here. */
+
+:root {
+  /* paper & ink */
+  --bone:        #F2EFE3;
+  --paper:       #FCFBF6;
+  --ink:         #1B3324;
+  --ink-2:       #3B5545;
+  --muted:       #46594E;
+  --faint:       #586D5F;
+
+  /* foliage — a touch more saturated; the old set read washed out */
+  --canopy:      #10281A;
+  --moss:        #4E8058;
+  --moss-deep:   #37603F;
+  --sage:        #9DBA9B;
+  --sage-pale:   #C6D8C2;
+
+  /* the warm notes, used sparingly */
+  --terracotta:  #C08468;
+  --ochre:       #AE8A38;
+  --rust:        #A2553A;
+
+  /* surfaces */
+  --glass:       rgba(255, 255, 255, .52);
+  --glass-2:     rgba(255, 255, 255, .38);
+  --glass-edge:  rgba(255, 255, 255, .70);
+  --canvas:      rgba(255, 255, 255, .28);
+  --canvas-edge: rgba(255, 255, 255, .46);
+  --tile:        rgba(78, 128, 88, .07);
+  --tile-2:      rgba(78, 128, 88, .13);
+  --sunk:        rgba(30, 55, 40, .035);
+  --hair:        rgba(27, 51, 36, .12);
+  --hair-soft:   rgba(27, 51, 36, .06);
+  --shade:       rgba(27, 51, 36, .07);
+  --highlight:   rgba(255, 255, 255, .55);
+
+  /* elevation — soft, low-alpha and green-tinted, never grey */
+  --shadow-sm: 0 2px 8px -4px rgba(20, 45, 28, .28);
+  --shadow-md: 0 10px 26px -16px rgba(20, 45, 28, .38);
+  --shadow-lg: 0 26px 56px -32px rgba(20, 45, 28, .42);
+
+  /* Semantic aliases live on <body>, at the very end of this file — see the
+     note there. Declaring them on :root would freeze them to the day palette. */
+  --c-sleep:      #8598BC;
+
+  /* type — rounded throughout; macOS resolves ui-rounded to SF Pro Rounded */
+  --display: ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Varela Round',
+             'Trebuchet MS', system-ui, sans-serif;
+  --sans:    ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Varela Round',
+             -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono:    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* a real scale at ~1.25, instead of six near-adjacent sizes */
+  --t-xs:   0.6875rem;
+  --t-sm:   0.8125rem;
+  --t-base: 0.9375rem;
+  --t-md:   1.125rem;
+  --t-lg:   1.5rem;
+  --t-xl:   2rem;
+
+  /* figures, in three steps — hero, second, third */
+  --fig-1:  clamp(2.9rem, 5.6vw, 4.1rem);
+  --fig-2:  clamp(1.9rem, 3.3vw, 2.5rem);
+  --fig-3:  clamp(1.4rem, 2.2vw, 1.7rem);
+
+  --track-wide: .11em;
+  --track-tight: -.02em;
+
+  /* roundness */
+  --r-xs:   8px;
+  --r-sm:   12px;
+  --r-md:   18px;
+  --r-lg:   26px;
+  --r-xl:   34px;
+  --r-2xl:  44px;
+  --r-pill: 999px;
+
+  /* rhythm — one ladder, so margins stop being invented per block */
+  --sp-1: .3rem;
+  --sp-2: .55rem;
+  --sp-3: .85rem;
+  --sp-4: 1.2rem;
+  --sp-5: 1.8rem;
+  --sp-6: 2.6rem;
+
+  --gap:   1.5rem;
+  --pad:   1.9rem;
+  --rule:  1px;
+
+  /* the sun — js/app.js moves these through the day */
+  --sun-x:    50%;
+  --sun-y:    18%;
+  --sun-warm: 0;
+  --sun-lift: 1;
+
+  /* The sprout mark, used for empty states. A mask rather than an emoji or an
+     <img>, so it takes --sage with it and follows the theme. */
+  --sprout: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 30V13' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5.4 4.2-8.7 9.7-8.7C25.7 13.7 21.5 17 16 17z' fill='%23000'/%3E%3Cpath d='M16 23.6c0-4.2-3.3-6.8-7.6-6.8 0 4.2 3.3 6.8 7.6 6.8z' fill='%23000'/%3E%3C/svg%3E");
+
+  /* motion */
+  --ease:   cubic-bezier(.22, .68, .26, 1);
+  --bounce: cubic-bezier(.34, 1.42, .5, 1);
+  --slow:   .9s;
+
+  /* plant state — overwritten per data-state below */
+  --foliage:    #43714D;
+  --foliage-2:  #55875D;
+  --water-a:    rgba(104, 148, 111, .40);
+  --water-b:    rgba(70, 110, 80, .60);
+  --grain-blend: multiply;
+  --grain-alpha: .04;
+}
+
+/* The water stays in the green family at every level — it drains, it does not
+   change meaning. Ochre belongs to wasted time alone, so the two can never be
+   confused. The foliage carries the colour story instead.
+
+   Foliage is composed rather than listed: the species picks a hue, the state
+   picks how far that hue has travelled toward the dead brown. Four species
+   times four states times two themes would otherwise be thirty-two hand-written
+   pairs to keep in sync — this is eight, and a new species is one line. */
+.plant {
+  --leaf-h: 138;
+  --leaf-s: 26%;
+  --leaf-l: 38%;
+  --leaf-mix: 0;
+  --leaf-dead: #92603F;
+
+  --leaf-live:   hsl(var(--leaf-h) var(--leaf-s) var(--leaf-l));
+  --leaf-live-2: hsl(calc(var(--leaf-h) - 8) var(--leaf-s) calc(var(--leaf-l) + 10%));
+
+  --foliage:   color-mix(in oklab, var(--leaf-dead) calc(var(--leaf-mix) * 100%), var(--leaf-live));
+  --foliage-2: color-mix(in oklab, var(--leaf-dead) calc(var(--leaf-mix) * 88%), var(--leaf-live-2));
+}
+
+/* species: the hue it grows in */
+.plant[data-species="fern"]  { --leaf-h: 138; --leaf-s: 26%; }
+.plant[data-species="ivy"]   { --leaf-h: 156; --leaf-s: 21%; }
+.plant[data-species="jade"]  { --leaf-h: 112; --leaf-s: 17%; }
+.plant[data-species="grass"] { --leaf-h: 84;  --leaf-s: 31%; }
+
+/* state: how far the day has taken it. Water is unchanged and stays green. */
+.plant[data-state="thriving"] { --leaf-l: 35%; --leaf-mix: 0;
+  --water-a: rgba(110, 154, 117, .38); --water-b: rgba(70, 112, 80, .58); }
+.plant[data-state="steady"]   { --leaf-l: 40%; --leaf-mix: .22;
+  --water-a: rgba(116, 152, 116, .35); --water-b: rgba(76, 112, 82, .55); }
+.plant[data-state="fading"]   { --leaf-l: 41%; --leaf-mix: .62;
+  --water-a: rgba(126, 146, 122, .30); --water-b: rgba(88, 110, 88, .48); }
+.plant[data-state="spent"]    { --leaf-l: 41%; --leaf-mix: 1;
+  --water-a: rgba(134, 142, 130, .24); --water-b: rgba(98, 106, 96, .40); }
+
+/* The light behind the shelf, tinted by how the day is going. Same four states
+   the foliage already uses, so nothing new is being computed — the page just
+   stops being one flat tint from edge to edge.
+
+   Kept inside the green/gold family and under .10 alpha on purpose: ochre means
+   wasted time and only wasted time, and a pool strong enough to read as yellow
+   would start arguing with the jar. */
+.stagecentre[data-state="thriving"] { --pool-a: rgba(150, 190, 132, .100); --pool-b: rgba(120, 168, 118, .046); }
+.stagecentre[data-state="steady"]   { --pool-a: rgba(150, 182, 126, .078); --pool-b: rgba(122, 162, 116, .036); }
+.stagecentre[data-state="fading"]   { --pool-a: rgba(160, 168, 128, .052); --pool-b: rgba(130, 148, 122, .024); }
+.stagecentre[data-state="spent"]    { --pool-a: rgba(150, 152, 140, .030); --pool-b: rgba(130, 136, 128, .014); }
+
+/* ── dusk ─────────────────────────────────────────────────────────────
+   The site closes down when your window does — after 20:00 WIB and again
+   before 06:00. It follows Jakarta, not the machine's dark-mode setting. */
+body[data-dusk="1"], body[data-dusk="auto"] {
+  --bone:        #101C15;
+  --paper:       #17251C;
+  --ink:         #DFE9E0;
+  --ink-2:       #BACCBC;
+  --muted:       #8FA593;
+  --faint:       #778C7C;
+
+  --canopy:      #CBDECD;
+  --moss:        #7BAA82;
+  --moss-deep:   #629069;
+  --sage:        #728F76;
+  --sage-pale:   #4E6754;
+
+  --terracotta:  #CB9174;
+  --ochre:       #C6A254;
+  --rust:        #B76748;
+
+  --glass:       rgba(200, 230, 205, .06);
+  --glass-2:     rgba(200, 230, 205, .035);
+  --glass-edge:  rgba(210, 235, 215, .13);
+  --canvas:      rgba(200, 230, 205, .028);
+  --canvas-edge: rgba(210, 235, 215, .08);
+  --tile:        rgba(200, 230, 205, .05);
+  --tile-2:      rgba(200, 230, 205, .09);
+  --sunk:        rgba(0, 0, 0, .14);
+  --hair:        rgba(214, 233, 217, .12);
+  --hair-soft:   rgba(214, 233, 217, .06);
+  --shade:       rgba(0, 0, 0, .3);
+  --highlight:   rgba(210, 235, 215, .10);
+
+  --shadow-sm: 0 2px 8px -4px rgba(0, 0, 0, .5);
+  --shadow-md: 0 10px 26px -16px rgba(0, 0, 0, .6);
+  --shadow-lg: 0 26px 56px -32px rgba(0, 0, 0, .65);
+
+  --grain-blend: overlay;
+  --grain-alpha: .06;
+
+  color-scheme: dark;
+}
+
+/* At night the pool is a glow rather than a wash, so it comes down again. */
+body[data-dusk="1"] .stagecentre[data-state="thriving"],
+body[data-dusk="auto"] .stagecentre[data-state="thriving"] { --pool-a: rgba(146, 198, 152, .070); --pool-b: rgba(104, 154, 116, .030); }
+body[data-dusk="1"] .stagecentre[data-state="steady"],
+body[data-dusk="auto"] .stagecentre[data-state="steady"]   { --pool-a: rgba(150, 192, 140, .054); --pool-b: rgba(108, 150, 112, .024); }
+body[data-dusk="1"] .stagecentre[data-state="fading"],
+body[data-dusk="auto"] .stagecentre[data-state="fading"]   { --pool-a: rgba(168, 176, 132, .038); --pool-b: rgba(122, 138, 112, .016); }
+body[data-dusk="1"] .stagecentre[data-state="spent"],
+body[data-dusk="auto"] .stagecentre[data-state="spent"]    { --pool-a: rgba(160, 164, 152, .022); --pool-b: rgba(120, 126, 120, .010); }
+
+/* Only the ladder moves at night — the species hue and the composition stay,
+   so a jade plant is still jade after dark. */
+body[data-dusk="1"] .plant, body[data-dusk="auto"] .plant { --leaf-dead: #A67150; }
+body[data-dusk="1"] .plant[data-state="thriving"],
+body[data-dusk="auto"] .plant[data-state="thriving"] { --leaf-l: 50%; }
+body[data-dusk="1"] .plant[data-state="steady"],
+body[data-dusk="auto"] .plant[data-state="steady"]   { --leaf-l: 52%; }
+body[data-dusk="1"] .plant[data-state="fading"],
+body[data-dusk="auto"] .plant[data-state="fading"]   { --leaf-l: 54%; }
+body[data-dusk="1"] .plant[data-state="spent"],
+body[data-dusk="auto"] .plant[data-state="spent"]    { --leaf-l: 54%; }
+
+
+/* ── semantic aliases ─────────────────────────────────────────────────
+   These sit on <body>, not :root, and after the dusk block. A custom
+   property is substituted where it is *declared*, so `--c-productive:
+   var(--moss)` on :root would resolve against the day palette and keep that
+   value at night, however the dusk rules redefine --moss. Declaring them on
+   the same element the theme lands on makes them follow it. */
+body {
+  --c-productive: var(--moss);
+  --c-wasted:     var(--ochre);
+  --c-booked:     var(--moss-deep);
+  --c-untracked:  var(--faint);
+
+  /* Selected pills: a dark ground under pale text by day, inverted at night.
+     Reusing the mid-tone accents straight would leave white on ochre at
+     2.9:1 — below AA for the text sitting on it. */
+  --pill-bg: var(--moss-deep);
+  --pill-fg: #F7F4EB;
+  --pill-productive: #37603F;
+  --pill-wasted:     #7A6124;
+  --pill-sleep:      #4C5F80;
+}
+body[data-dusk="1"], body[data-dusk="auto"] {
+  --pill-bg: #86BB90;
+  --pill-fg: #0C1710;
+  --pill-productive: #7BAA82;
+  --pill-wasted:     #C6A254;
+  --pill-sleep:      #93A6C6;
+}

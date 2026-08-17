@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terrarium — your day, 06:00 to 20:00</title>
+<meta name="description" content="A quiet ledger for the fourteen hours you actually get. Log what you kept, what you lost, and what you slept.">
+<!-- Published from a private repo, but GitHub Pages serves the site publicly to
+     anyone with the URL. This keeps it out of search engines so the link stays
+     the only way to find it. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 28V12' stroke='%234E7355' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 16c0-5 4-8 9-8 0 5-4 8-9 8z' fill='%234E7355'/%3E%3Cpath d='M16 22c0-4-3-6-7-6 0 4 3 6 7 6z' fill='%239DB59B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/plant.css">
+<link rel="stylesheet" href="css/panels.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/splash.css">
+</head>
+<body>
+
+<!-- the place: ground, foliage, a sun that crosses the day, then a vignette -->
+<div class="field" aria-hidden="true">
+  <svg class="field__flora" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g class="flora__far">
+      <path d="M-60 700C40 560 120 470 260 430c-40 130-110 220-320 300z"/>
+      <path d="M1290 120c-150 20-260 80-330 180 130 30 250-20 340-130z"/>
+      <path d="M980 810c30-190 130-320 300-390-10 210-100 340-260 420z"/>
+    </g>
+    <g class="flora__near">
+      <path d="M-80 240C60 150 200 140 330 190 210 300 60 320-70 270z"/>
+      <path d="M1270 600c-160-30-290 10-380 120 150 70 300 40 400-70z"/>
+      <path d="M420 830c-60-150-30-290 80-400 90 140 80 290-20 420z"/>
+      <path d="M700 -40c70 120 60 240-20 350-90-110-100-230-40-350z"/>
+    </g>
+  </svg>
+  <div class="field__sun"></div>
+  <div class="field__vignette"></div>
+</div>
+<svg class="grain" aria-hidden="true" focusable="false">
+  <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch"/></filter>
+  <rect width="100%" height="100%" filter="url(#grainFilter)"/>
+</svg>
+
+
+<!-- ─────────────── the threshold ───────────────
+     Shown on every load and dismissed by hand. It is made of the app's own
+     parts — the same jar, the same leaf shapes, the same unfurl the right-hand
+     vessel does when you log time — so it reads as the front door of this
+     place rather than a loading screen bolted to it.
+
+     <noscript> lets it out of the way entirely: the button needs JS to work,
+     and a door that cannot open is worse than no door. -->
+<noscript><style>.splash { display: none !important; }</style></noscript>
+
+<div class="splash" id="splash" role="dialog" aria-modal="true" aria-labelledby="splashTitle">
+  <div class="splash__night" aria-hidden="true"></div>
+  <div class="splash__sun" aria-hidden="true"></div>
+
+  <div class="splash__body">
+    <svg class="splash__plant plant" id="splashPlant" viewBox="0 40 420 560"
+         data-state="thriving" aria-hidden="true" focusable="false">
+      <ellipse class="cast" cx="210" cy="568" rx="116" ry="15" fill="url(#castShadow)"/>
+
+      <g class="foliage">
+        <path class="stem" id="splashStem" d="M210 300Q221 184 209 72"/>
+        <g class="leaves" id="splashLeaves"></g>
+        <circle class="tip" cx="209" cy="64" r="8"/>
+      </g>
+
+      <g class="glass">
+        <path class="glass__body" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298Z" fill="url(#glassGrad)"/>
+        <g clip-path="url(#vesselClip)">
+          <g class="water" id="splashWater">
+            <g class="water__wave">
+              <path d="M-240 0q30-5 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0L480 330 -240 330Z" fill="url(#waterGrad)"/>
+            </g>
+            <path class="water__line" d="M-240 0q30-5 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0"/>
+          </g>
+        </g>
+        <path class="glare glare--wide" d="M124 350C116 392 116 438 124 482" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path class="glare glare--thin" d="M146 370C141 402 141 432 146 462" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path class="glare glare--edge" d="M306 358C311 396 311 434 306 470" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <ellipse class="glass__rim" cx="210" cy="298" rx="92" ry="11"/>
+        <path class="glass__edge" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298"/>
+      </g>
+    </svg>
+
+    <h1 class="splash__title" id="splashTitle">Terrarium</h1>
+    <p class="splash__line">Fourteen hours. Let's see what you do with them.</p>
+    <button type="button" class="splash__go" id="splashGo">Step inside</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="brand">
+    <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <path d="M16 29V13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M16 17c0-5.2 4.1-8.4 9.4-8.4C25.4 13.8 21.3 17 16 17z" fill="currentColor" opacity=".9"/>
+      <path d="M16 23.4c0-4.1-3.2-6.6-7.4-6.6 0 4.1 3.2 6.6 7.4 6.6z" fill="currentColor" opacity=".5"/>
+    </svg>
+    <span class="brand__name">Terrarium</span>
+  </div>
+  <div class="tabs" role="tablist" aria-label="View">
+    <button type="button" role="tab" id="tabToday" aria-controls="viewToday" aria-selected="true" data-view="today">Today</button>
+    <button type="button" role="tab" id="tabRecord" aria-controls="viewRecord" aria-selected="false" data-view="record">The record</button>
+  </div>
+
+  <div class="masthead__end">
+    <div class="theme" id="themePick" role="radiogroup" aria-label="Appearance">
+      <button type="button" role="radio" data-theme="light" aria-checked="false" title="Light">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="8" cy="8" r="3"/>
+            <path d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1"/>
+          </g>
+        </svg>
+        <span class="visually-hidden">Light</span>
+      </button>
+      <button type="button" role="radio" data-theme="auto" aria-checked="true" title="Follow the window — dims when your day closes">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 2.8a5.2 5.2 0 0 1 0 10.4z" fill="currentColor"/>
+        </svg>
+        <span class="visually-hidden">Follow the window</span>
+      </button>
+      <button type="button" role="radio" data-theme="dark" aria-checked="false" title="Dark">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M12.8 9.9A5.4 5.4 0 0 1 6.1 3.2a5.4 5.4 0 1 0 6.7 6.7z" fill="currentColor"/>
+        </svg>
+        <span class="visually-hidden">Dark</span>
+      </button>
+    </div>
+
+    <p class="stamp">
+      <span class="stamp__day" id="stampDay">—</span>
+      <span class="stamp__dot" aria-hidden="true">·</span>
+      <span class="stamp__clock" id="stampClock">--:--</span>
+      <span class="stamp__tz">WIB</span>
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─────────────── the fold ─────────────── -->
+  <section class="stage" id="viewToday" role="tabpanel" aria-labelledby="tabToday" aria-label="Today at a glance">
+
+    <!-- left: the ledger -->
+    <aside class="ledger">
+      <h2 class="eyebrow">Today's ledger</h2>
+
+      <dl class="ledger__rows">
+        <div class="lrow" data-k="productive">
+          <dt><i class="swatch"></i>Productive</dt>
+          <dd id="ledProductive">0m</dd>
+        </div>
+        <div class="lrow" data-k="wasted">
+          <dt><i class="swatch"></i>Wasted</dt>
+          <dd id="ledWasted">0m</dd>
+        </div>
+        <div class="lrow" data-k="sleep">
+          <dt><i class="swatch"></i>Napped</dt>
+          <dd id="ledNap">0m</dd>
+        </div>
+        <div class="lrow lrow--muted" data-k="untracked">
+          <dt><i class="swatch"></i>Untracked</dt>
+          <dd id="ledUntracked">0m</dd>
+        </div>
+      </dl>
+
+      <!-- A reported figure, not a setting: it belongs with the totals above and
+           stays out on a phone, where everything below folds away. -->
+      <div class="ledger__budget">
+        <p class="ledger__budgetline"><span id="budgetVal">14.0h</span> usable today</p>
+        <p class="ledger__budgetnote" id="budgetNote">Full capacity — 14h window, nothing withheld.</p>
+      </div>
+
+      <!-- Set once a day rather than consulted, so on a phone this folds away.
+           js/app.js keeps it open above the phone breakpoint. -->
+      <details class="daysetup" id="daySetup" open>
+      <summary class="daysetup__toggle">Day setup</summary>
+
+      <div class="windowend">
+        <p class="windowend__label" id="speciesLabel">Plant</p>
+        <div class="windowend__opts" id="speciesOpts" role="radiogroup" aria-labelledby="speciesLabel">
+          <button type="button" data-species="fern" role="radio" aria-checked="true">Fern</button>
+          <button type="button" data-species="ivy" role="radio" aria-checked="false">Ivy</button>
+          <button type="button" data-species="jade" role="radio" aria-checked="false">Jade</button>
+          <button type="button" data-species="grass" role="radio" aria-checked="false">Grass</button>
+        </div>
+      </div>
+
+      <div class="windowend windowend--inline">
+        <p class="windowend__label" id="keysLabel">Shortcut hints</p>
+        <div class="windowend__opts" id="keysOpts" role="radiogroup" aria-labelledby="keysLabel">
+          <button type="button" data-keys="off" role="radio" aria-checked="true"
+                  title="Hide the key hints. The shortcuts keep working.">Hidden</button>
+          <button type="button" data-keys="on" role="radio" aria-checked="false"
+                  title="Show P, W, S, 1, 2, 3 and T on the buttons they belong to.">Shown</button>
+        </div>
+      </div>
+
+      <div class="windowend">
+        <p class="windowend__label" id="targetLabel">Daily target</p>
+        <div class="windowend__opts" id="targetOpts" role="radiogroup" aria-labelledby="targetLabel">
+          <button type="button" data-target="60" role="radio" aria-checked="false">1h</button>
+          <button type="button" data-target="120" role="radio" aria-checked="false">2h</button>
+          <button type="button" data-target="180" role="radio" aria-checked="false">3h</button>
+          <button type="button" data-target="240" role="radio" aria-checked="false">4h</button>
+          <button type="button" data-target="300" role="radio" aria-checked="false">5h</button>
+          <button type="button" data-target="360" role="radio" aria-checked="true">6h</button>
+          <button type="button" data-target="480" role="radio" aria-checked="false">8h</button>
+        </div>
+      </div>
+
+      <div class="windowend">
+        <p class="windowend__label" id="windowEndLabel">Window ends</p>
+        <div class="windowend__opts" role="radiogroup" aria-labelledby="windowEndLabel">
+          <button type="button" data-end="1200" role="radio" aria-checked="true">20</button>
+          <button type="button" data-end="1260" role="radio" aria-checked="false">21</button>
+          <button type="button" data-end="1320" role="radio" aria-checked="false">22</button>
+          <button type="button" data-end="1380" role="radio" aria-checked="false">23</button>
+          <button type="button" data-end="1440" role="radio" aria-checked="false">00</button>
+        </div>
+        <p class="windowend__note" id="windowNote">Cramming tonight? Push it out. Tomorrow opens back at 20:00.</p>
+      </div>
+
+      <form class="nightsleep" id="nightSleepForm">
+        <div class="nightsleep__pair">
+          <div>
+            <label class="nightsleep__label" for="nightSleepInput">Slept last night</label>
+            <div class="nightsleep__field">
+              <input id="nightSleepInput" name="nightsleep" type="text" inputmode="numeric"
+                     autocomplete="off" placeholder="7h 30m" aria-describedby="capNote">
+            </div>
+          </div>
+          <div>
+            <label class="nightsleep__label" for="wakeInput">Woke at</label>
+            <div class="nightsleep__field">
+              <input id="wakeInput" name="wake" type="text" inputmode="numeric"
+                     autocomplete="off" placeholder="06:00" aria-describedby="capNote">
+            </div>
+          </div>
+          <button type="submit" class="btn btn--quiet nightsleep__set">Set</button>
+        </div>
+        <p class="nightsleep__note" id="capNote">Waking later starts your window later. Sleep is never waste.</p>
+      </form>
+      </details>
+    </aside>
+
+    <!-- centre: two plants on a shelf — one draining, one growing -->
+    <div class="stagecentre">
+
+      <!-- Shapes and gradients are shared by both vessels: url(#…) resolves
+           across the whole document, and the two jars are the same jar. -->
+      <svg class="defs" aria-hidden="true" focusable="false" width="0" height="0">
+        <defs>
+          <!-- One silhouette per species. Each is drawn from the leaf's joint at
+               0,0 pointing right; plant.js places, rotates and scales it. -->
+          <g id="leafFern">
+            <path class="leaf__blade" d="M0 0C9-13 33-19 51-12 62.5-7 62.5 7 51 12 33 19 9 13 0 0Z"/>
+            <path class="leaf__rib" d="M5 0C21-1.5 38-1.5 52 0"/>
+          </g>
+          <!-- ivy: broad, heart-shouldered, blunt at the tip -->
+          <g id="leafIvy">
+            <path class="leaf__blade" d="M0 0C6-16 26-25 42-19 56-13 56 13 42 19 26 25 6 16 0 0Z"/>
+            <path class="leaf__rib" d="M4 0C18-1 32-1 44 0"/>
+          </g>
+          <!-- jade: a fat rounded pad -->
+          <g id="leafJade">
+            <path class="leaf__blade" d="M0 0C4-13 16-20 28-20 41-20 47-11 47 0 47 11 41 20 28 20 16 20 4 13 0 0Z"/>
+            <path class="leaf__rib" d="M6 0C18-.5 30-.5 40 0"/>
+          </g>
+          <!-- grass: a long blade that tapers to a point -->
+          <g id="leafGrass">
+            <path class="leaf__blade" d="M0 0C14-7 40-9 68-5 40 0 40 0 68 5 40 9 14 7 0 0Z"/>
+            <path class="leaf__rib" d="M4 0C24-.5 46-.5 64 0"/>
+          </g>
+
+          <clipPath id="vesselClip">
+            <path d="M127 298C102 350 96 400 100 447C104 496 118 533 151 546Q210 559 269 546C302 533 316 496 320 447C324 400 318 350 293 298Z"/>
+          </clipPath>
+
+          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" class="water-stop-a"/>
+            <stop offset="1" class="water-stop-b"/>
+          </linearGradient>
+
+          <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0"    stop-color="#fff" stop-opacity=".34"/>
+            <stop offset=".18"  stop-color="#fff" stop-opacity=".08"/>
+            <stop offset=".72"  stop-color="#fff" stop-opacity=".04"/>
+            <stop offset="1"    stop-color="#fff" stop-opacity=".22"/>
+          </linearGradient>
+
+          <radialGradient id="castShadow" cx=".5" cy=".5" r=".5">
+            <stop offset="0"   class="shadow-stop-a"/>
+            <stop offset="1"   class="shadow-stop-b"/>
+          </radialGradient>
+
+          <!-- booked time: texture rather than a fourth colour, since ochre is
+               already spent on waste and blue on sleep -->
+          <pattern id="bookedHatch" width="9" height="9" patternUnits="userSpaceOnUse"
+                   patternTransform="rotate(45)">
+            <rect width="9" height="9" class="hatch-bg"/>
+            <line x1="0" y1="0" x2="0" y2="9" class="hatch-line"/>
+          </pattern>
+        </defs>
+      </svg>
+
+      <div class="shelf">
+
+        <!-- ── vessel A: the future ─────────────────────────── -->
+        <figure class="vessel">
+          <svg class="plant plant--left" id="plantLeft" viewBox="0 0 420 600" role="img"
+               aria-labelledby="leftTitle leftDesc" data-state="thriving">
+            <title id="leftTitle">The hours you have left</title>
+            <desc id="leftDesc">A plant in a glass jar. The water level is the time still left in today's window, and the leaves wilt from the tip down as the day runs out.</desc>
+
+            <ellipse class="cast" cx="210" cy="568" rx="116" ry="15" fill="url(#castShadow)"/>
+
+            <g class="foliage">
+              <path class="stem" d="M210 300Q221 184 209 72"/>
+              <g class="leaves" id="leftLeaves"></g>
+              <circle class="tip" cx="209" cy="64" r="8"/>
+            </g>
+
+            <g class="glass">
+              <path class="glass__body" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298Z" fill="url(#glassGrad)"/>
+
+              <g clip-path="url(#vesselClip)">
+                <g class="water" id="leftWater">
+                  <g class="water__wave">
+                    <path d="M-240 0q30-5 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0L480 330 -240 330Z"
+                          fill="url(#waterGrad)"/>
+                  </g>
+                  <path class="water__line" d="M-240 0q30-5 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0"/>
+                </g>
+
+                <!-- the part of what is left that is already spoken for -->
+                <g class="booked" id="leftBooked">
+                  <path class="booked__body" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3L324 272 96 272Z"/>
+                  <path class="booked__crust" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3"/>
+                </g>
+              </g>
+
+              <!-- where 20:00 sits, on a night that runs past it -->
+              <g class="nightline" id="leftNightLine" hidden>
+                <line x1="104" x2="316" y1="0" y2="0"/>
+                <text x="112" y="-7">20:00</text>
+              </g>
+
+              <g class="ticks" id="leftTicks"></g>
+
+              <path class="glare glare--wide" d="M124 350C116 392 116 438 124 482" stroke-width="14" stroke-linecap="round" fill="none"/>
+              <path class="glare glare--thin" d="M146 370C141 402 141 432 146 462" stroke-width="5" stroke-linecap="round" fill="none"/>
+              <path class="glare glare--edge" d="M306 358C311 396 311 434 306 470" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+
+              <ellipse class="glass__rim" cx="210" cy="298" rx="92" ry="11"/>
+              <path class="glass__edge" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298"/>
+            </g>
+          </svg>
+
+          <figcaption class="readout readout--pair" aria-live="polite">
+            <div class="readout__half">
+              <p class="readout__figure">
+                <span class="readout__num" id="leftNum">0.0</span><span class="readout__unit">h</span>
+              </p>
+              <p class="readout__label">hours left</p>
+            </div>
+            <div class="readout__half">
+              <p class="readout__figure">
+                <span class="readout__num" id="freeNum">0.0</span><span class="readout__unit">h</span>
+              </p>
+              <p class="readout__label">free</p>
+            </div>
+            <p class="readout__sub readout__sub--wide" id="leftSub">—</p>
+          </figcaption>
+        </figure>
+
+        <!-- ── vessel B: the past ───────────────────────────── -->
+        <figure class="vessel">
+          <svg class="plant plant--grown" id="plantGrown" viewBox="0 0 420 600" role="img"
+               aria-labelledby="grownTitle grownDesc">
+            <title id="grownTitle">What you have made of it</title>
+            <desc id="grownDesc">A second plant that starts bare each morning and grows a leaf for every stretch of productive time. Wasted time settles as ochre sludge in its jar, and unlogged time as a grey band above it.</desc>
+
+            <ellipse class="cast" cx="210" cy="568" rx="116" ry="15" fill="url(#castShadow)"/>
+
+            <!-- The same plant, fully grown, drawn faintly behind the real one.
+                 A bare jar then shows the shape of the day it is aiming at
+                 instead of reading as a dead stick in an empty glass. -->
+            <g class="foliage foliage--ghost" aria-hidden="true">
+              <path class="stem" d="M210 300Q221 184 209 72"/>
+              <g class="leaves" id="grownGhost"></g>
+              <circle class="tip" cx="209" cy="64" r="8"/>
+            </g>
+
+            <g class="foliage">
+              <path class="stem" d="M210 300Q221 184 209 72"/>
+              <g class="leaves" id="grownLeaves"></g>
+              <circle class="tip" cx="209" cy="64" r="8"/>
+            </g>
+
+            <g class="glass">
+              <path class="glass__body" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298Z" fill="url(#glassGrad)"/>
+
+              <g clip-path="url(#vesselClip)">
+                <!-- roots lengthen with the hours you kept -->
+                <g class="roots" id="grownRoots">
+                  <path pathLength="100" d="M210 300v220"/>
+                  <path pathLength="100" d="M210 300c-7 26-10 52-12 78-1 22-2 42-2 62"/>
+                  <path pathLength="100" d="M210 300c7 26 10 52 12 78 1 22 2 42 2 62"/>
+                  <path pathLength="100" d="M210 300c-15 22-25 44-31 68-5 20-7 38-8 58"/>
+                  <path pathLength="100" d="M210 300c15 22 25 44 31 68 5 20 7 38 8 58"/>
+                </g>
+
+                <!-- unlogged time: a grey band riding on top of the sludge -->
+                <g class="haze" id="grownHaze">
+                  <path class="haze__body" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3L324 272 96 272Z"/>
+                  <path class="haze__crust" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3"/>
+                </g>
+
+                <!-- wasted time, settled at the bottom -->
+                <g class="sediment" id="grownSludge">
+                  <path class="sediment__body" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3L324 272 96 272Z"/>
+                  <path class="sediment__crust" d="M96 0C136-6 182 5 210-1 254-7 290 4 324-3"/>
+                </g>
+              </g>
+
+              <!-- where a full target day would reach -->
+              <g class="targetline" id="grownTargetLine" hidden>
+                <line x1="104" x2="316" y1="0" y2="0"/>
+                <text x="112" y="-7">target</text>
+              </g>
+
+              <g class="ticks" id="grownTicks"></g>
+
+              <path class="glare glare--wide" d="M124 350C116 392 116 438 124 482" stroke-width="14" stroke-linecap="round" fill="none"/>
+              <path class="glare glare--thin" d="M146 370C141 402 141 432 146 462" stroke-width="5" stroke-linecap="round" fill="none"/>
+              <path class="glare glare--edge" d="M306 358C311 396 311 434 306 470" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+
+              <ellipse class="glass__rim" cx="210" cy="298" rx="92" ry="11"/>
+              <path class="glass__edge" d="M118 298C92 348 86 400 90 448C94 500 110 540 144 554Q210 568 276 554C310 540 326 500 330 448C334 400 328 348 302 298"/>
+            </g>
+
+            <g class="napmark" id="napMark" hidden>
+              <path d="M148 0a9.5 9.5 0 1 0 8.6 11.4A7.4 7.4 0 0 1 148 0z"/>
+              <text x="166" y="9" id="napMarkText">0m</text>
+            </g>
+          </svg>
+
+          <figcaption class="readout" aria-live="polite">
+            <p class="readout__figure">
+              <span class="readout__num" id="grownNum">0.0</span><span class="readout__unit">h</span>
+            </p>
+            <p class="readout__label">done today</p>
+            <p class="readout__sub" id="grownSub">—</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- what the two add up to -->
+      <div class="ceiling" aria-live="polite">
+        <p class="ceiling__line">
+          <span class="ceiling__label">today's ceiling</span>
+          <span class="ceiling__val" id="ceilingVal">0.0h</span>
+        </p>
+        <!-- the sentence first, then the one status that qualifies it -->
+        <p class="readout__verdict" id="verdict"></p>
+        <p class="ceiling__break" id="ceilingBreak"></p>
+        <p class="nudge" id="nudge" hidden>
+          <button type="button" class="nudge__act" id="nudgeAct"></button>
+          <button type="button" class="nudge__hide" id="nudgeHide" aria-label="Dismiss for now">×</button>
+        </p>
+      </div>
+
+      <div class="daystrip">
+        <svg id="dayStrip" viewBox="0 0 860 46" role="img" aria-label="The window from 6am to 8pm, with what has been logged along it"></svg>
+      </div>
+    </div>
+
+    <!-- right: logging and planning -->
+    <aside class="logbook">
+      <div class="booktabs" role="tablist" aria-label="Log or plan">
+        <button type="button" role="tab" id="bookTabLog" aria-controls="bookLog"
+                aria-selected="true" data-book="log">Log time</button>
+        <button type="button" role="tab" id="bookTabPlan" aria-controls="bookPlan"
+                aria-selected="false" data-book="plan">Plan</button>
+        <!-- the count matters: this panel is hidden by default, so outstanding
+             work would otherwise be invisible until you went looking -->
+        <button type="button" role="tab" id="bookTabTasks" aria-controls="bookTasks"
+                aria-selected="false" data-book="tasks">Tasks<span class="booktabs__count" id="taskCount" hidden></span></button>
+      </div>
+
+      <div id="bookLog" role="tabpanel" aria-labelledby="bookTabLog">
+
+      <!-- Pinned to the thumb on a phone. It lives inside #bookLog, so it
+           disappears with the panel when Plan is showing. -->
+      <div class="quickadd">
+      <div class="tagpick" role="radiogroup" aria-label="Kind of time">
+        <button type="button" class="tag" data-tag="productive" role="radio" aria-checked="true">
+          <span>Productive</span><kbd>P</kbd>
+        </button>
+        <button type="button" class="tag" data-tag="wasted" role="radio" aria-checked="false">
+          <span>Wasted</span><kbd>W</kbd>
+        </button>
+        <button type="button" class="tag" data-tag="sleep" role="radio" aria-checked="false">
+          <span>Nap</span><kbd>S</kbd>
+        </button>
+      </div>
+
+      <div class="chips">
+        <button type="button" class="chip" data-min="15">+15m<kbd>1</kbd></button>
+        <button type="button" class="chip" data-min="30">+30m<kbd>2</kbd></button>
+        <button type="button" class="chip" data-min="60">+1h<kbd>3</kbd></button>
+      </div>
+      </div><!-- /quickadd -->
+
+      <form class="custom" id="customForm" autocomplete="off">
+        <div class="custom__row">
+          <input class="custom__dur" id="customDur" type="text" inputmode="text"
+                 placeholder="45m" aria-label="How long">
+          <input class="custom__at" id="customAt" type="text" inputmode="numeric"
+                 placeholder="now" aria-label="At what time" title="Leave blank for now, or backfill: 14:30">
+          <input class="custom__label" id="customLabel" type="text"
+                 placeholder="what was it?" aria-label="Label">
+          <button type="submit" class="btn btn--solid">Add</button>
+        </div>
+      </form>
+
+      <div class="timer" id="timer" data-running="false">
+        <div class="timer__face">
+          <span class="timer__dot" aria-hidden="true"></span>
+          <span class="timer__time" id="timerTime">00:00:00</span>
+          <span class="timer__tag" id="timerTag">idle</span>
+        </div>
+        <button type="button" class="btn btn--quiet" id="timerBtn">Start<kbd>T</kbd></button>
+      </div>
+
+      <h3 class="eyebrow eyebrow--sub">Entries</h3>
+      <ul class="entries" id="entries"></ul>
+      </div><!-- /bookLog -->
+
+      <div id="bookPlan" role="tabpanel" aria-labelledby="bookTabPlan" hidden>
+        <p class="plan__summary" id="planSummary">Nothing booked today.</p>
+
+        <h3 class="eyebrow eyebrow--sub">Booked</h3>
+        <ul class="plan__list" id="planList"></ul>
+
+        <!-- One form for both kinds. A routine and a today-only block differ by
+             exactly one thing — whether it repeats — so that is the one control
+             that decides where it is written. -->
+        <form class="plan__add" id="planForm" autocomplete="off">
+          <div class="plan__row">
+            <input class="plan__time" id="planStart" type="text" inputmode="numeric"
+                   placeholder="08:00" aria-label="Start time">
+            <span class="plan__dash" aria-hidden="true">–</span>
+            <input class="plan__time" id="planEnd" type="text" inputmode="numeric"
+                   placeholder="10:00" aria-label="End time">
+            <input class="plan__label" id="planLabel" type="text"
+                   placeholder="what is it?" aria-label="Label">
+          </div>
+
+          <div class="plan__repeat windowend--inline">
+            <p class="windowend__label" id="repeatLabel">Repeats</p>
+            <div class="windowend__opts" id="repeatOpts" role="radiogroup" aria-labelledby="repeatLabel">
+              <button type="button" data-repeat="today" role="radio" aria-checked="true">Today</button>
+              <button type="button" data-repeat="daily" role="radio" aria-checked="false">Daily</button>
+              <button type="button" data-repeat="weekdays" role="radio" aria-checked="false">M–F</button>
+              <button type="button" data-repeat="pick" role="radio" aria-checked="false">Pick</button>
+            </div>
+            <div class="daychips" id="routineDays" role="group" aria-label="Which days it repeats" hidden></div>
+          </div>
+
+          <div class="plan__meta">
+            <div class="tagpick tagpick--mini" id="planTag" role="radiogroup" aria-label="Kind of time">
+              <button type="button" class="tag" data-tag="productive" role="radio" aria-checked="true">Productive</button>
+              <button type="button" class="tag" data-tag="wasted" role="radio" aria-checked="false">Wasted</button>
+              <button type="button" class="tag" data-tag="sleep" role="radio" aria-checked="false">Nap</button>
+            </div>
+            <button type="submit" class="btn btn--solid plan__go">Add</button>
+          </div>
+        </form>
+      </div><!-- /bookPlan -->
+
+      <!-- ── tasks: what you still have to do ───────────────
+           A task is not time until you log it, so nothing here touches the
+           ledger on its own — same rule the Plan tab follows. -->
+      <div id="bookTasks" role="tabpanel" aria-labelledby="bookTabTasks" hidden>
+        <form class="taskadd" id="taskForm" autocomplete="off">
+          <input class="taskadd__label" id="taskLabel" type="text"
+                 placeholder="what needs doing?" aria-label="Task">
+          <div class="taskadd__row">
+            <input class="taskadd__start" id="taskStart" type="text" inputmode="numeric"
+                   placeholder="09:00" aria-label="Start time, optional">
+            <input class="taskadd__dur" id="taskDur" type="text"
+                   placeholder="2h" aria-label="How long, optional">
+            <button type="submit" class="btn btn--solid">Add</button>
+          </div>
+        </form>
+
+        <div class="tasks__head">
+          <h3 class="eyebrow eyebrow--sub" id="tasksTitle">To do</h3>
+          <button type="button" class="tasks__clear" id="taskClear" hidden>clear done</button>
+        </div>
+        <ul class="tasks" id="tasks"></ul>
+      </div><!-- /bookTasks -->
+    </aside>
+  </section>
+
+  <!-- ─────────────── the record ─────────────── -->
+  <section class="dash" id="viewRecord" role="tabpanel" aria-labelledby="tabRecord" hidden>
+    <header class="dash__head">
+      <div class="dash__heading">
+        <h2 class="dash__title">The record</h2>
+        <p class="dash__range" id="dashRange">—</p>
+      </div>
+      <div class="periods" role="group" aria-label="Period">
+        <button type="button" data-period="day">Day</button>
+        <button type="button" data-period="week" class="is-on">Week</button>
+        <button type="button" data-period="month">Month</button>
+        <button type="button" data-period="year">Year</button>
+      </div>
+    </header>
+
+    <dl class="totals" id="totals"></dl>
+
+    <!-- Summary, then detail, then diagnosis. The ratio bar reads as a rule
+         under the totals instead of a full-width strip beneath a chart that
+         only used a quarter of the pane. -->
+    <section class="dash__block">
+      <h3 class="dash__h3">Kept against lost</h3>
+      <div class="ratio" id="ratio"></div>
+    </section>
+
+    <!-- The chart and its breakdown share the width rather than one being
+         stretched across it. Collapses to a single column at 1080px. -->
+    <div class="dash__pair">
+      <section class="dash__block">
+        <h3 class="dash__h3"><span id="railTitle">Day by day</span> <span class="dash__hint">productive · wasted · slept</span></h3>
+        <div class="rail" id="dayRail"></div>
+      </section>
+
+      <section class="dash__block">
+        <h3 class="dash__h3">Where it went <span class="dash__hint">by label</span></h3>
+        <div class="labels" id="labels"></div>
+      </section>
+    </div>
+
+    <section class="dash__block">
+      <h3 class="dash__h3">Where the day leaks <span class="dash__hint">wasted time by hour</span></h3>
+      <div class="leak" id="leak"></div>
+    </section>
+
+    <div class="dash__data">
+      <div class="dash__datanote">
+        <p id="saveState" class="savestate">Saved.</p>
+        <p class="savenote">This lives in your browser only. Keep a copy.</p>
+      </div>
+      <div class="dash__databtns">
+        <button type="button" class="btn btn--quiet" id="exportBtn">Export JSON</button>
+        <button type="button" class="btn btn--quiet" id="importBtn">Import JSON</button>
+        <button type="button" class="btn btn--quiet" id="restoreBtn" hidden>Undo import</button>
+        <input type="file" id="importInput" accept="application/json,.json" hidden>
+      </div>
+    </div>
+
+    <!-- Nothing is replaced until this is answered. -->
+    <div class="confirm" id="importConfirm" hidden role="alertdialog" aria-labelledby="importConfirmMsg">
+      <p class="confirm__msg" id="importConfirmMsg"></p>
+      <div class="confirm__acts">
+        <button type="button" class="btn btn--quiet" id="importCancel">Cancel</button>
+        <button type="button" class="btn btn--solid" id="importGo">Replace everything</button>
+      </div>
+    </div>
+    <footer class="colophon">
+      <p>06:00 – 20:00 Asia/Jakarta, later on a night you cram · nothing in the past touches the hours ahead. A wasted hour costs exactly one hour — off the ceiling, once.</p>
+    </footer>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span class="toast__msg" id="toastMsg"></span>
+  <button type="button" class="toast__undo" id="toastUndo">Undo</button>
+</div>
+
+<script src="js/time.js"></script>
+<script src="js/store.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/energy.js"></script>
+<script src="js/plant.js"></script>
+<script src="js/log.js"></script>
+<script src="js/plan.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/splash.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+/* splash.css — the threshold.
+
+   Sits at z-index 35: above the page, below the grain at 40, so the same tooth
+   that stops the rest of this looking machine-printed lies over it too.
+
+   The whole sequence is CSS keyframes on the splash's own elements. It does not
+   touch --sun-* or data-dusk: the page palette snaps deliberately at 20:00 to
+   avoid light text on a light ground, and driving a dawn through that system
+   would fight it. This dawn is local, and the page underneath is already
+   whatever it should be by the time you are let in. */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  overflow: hidden;
+  /* the ground it opens onto */
+  background: var(--bone);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+.splash[hidden] { display: none !important; }
+
+/* night, lifting */
+.splash__night {
+  position: absolute;
+  inset: 0;
+  /* Nearly opaque: at rgba(.5) over cream this read as a grey wash rather than
+     as night, and the sun had nothing to rise against. */
+  background:
+    linear-gradient(180deg,
+      rgba(9, 18, 13, .97) 0%,
+      rgba(12, 24, 17, .95) 42%,
+      rgba(16, 31, 21, .93) 100%);
+  animation: nightLifts 1.9s var(--ease) .2s both;
+}
+/* --ease front-loads hard, so an even 1 → 0 was down to .62 within 450ms and
+   the night never read as night. The value is held across the first half of the
+   timeline and falls in the second. */
+@keyframes nightLifts {
+  0%   { opacity: 1; }
+  30%  { opacity: .96; }
+  55%  { opacity: .82; }
+  100% { opacity: 0; }
+}
+
+/* the sun, coming up from under the fold */
+.splash__sun {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(46vw 40vw at 50% var(--splash-sun-y, 108%),
+    rgba(255, 226, 158, .95) 0%,
+    rgba(246, 206, 140, .42) 32%,
+    rgba(0, 0, 0, 0) 70%);
+  animation: sunUp 2s var(--ease) .1s both;
+}
+@keyframes sunUp {
+  0%   { --splash-sun-y: 112%; opacity: 0; }
+  25%  { opacity: 1; }
+  100% { --splash-sun-y: 64%;  opacity: .72; }
+}
+@property --splash-sun-y { syntax: '<percentage>'; inherits: false; initial-value: 108%; }
+
+body[data-dusk="1"] .splash__sun, body[data-dusk="auto"] .splash__sun {
+  background: radial-gradient(48vw 42vw at 50% var(--splash-sun-y, 108%),
+    rgba(150, 200, 160, .30) 0%,
+    rgba(96, 140, 110, .12) 40%,
+    rgba(0, 0, 0, 0) 72%);
+}
+
+/* The edges fall away so the middle reads as a lit place rather than a flat
+   page. Same trick .field__vignette plays on the app behind it. */
+.splash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(118% 96% at 50% 54%,
+    rgba(0, 0, 0, 0) 44%, rgba(28, 48, 34, .20) 100%);
+  animation: riseUp 1.4s var(--ease) .3s both;
+}
+body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
+  background: radial-gradient(118% 96% at 50% 54%,
+    rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, .58) 100%);
+}
+
+.splash__body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: .2rem;
+  text-align: center;
+}
+
+/* ── the plant ─────────────────────────────────────────── */
+
+.splash__plant {
+  width: min(46vw, 230px);
+  height: auto;
+  overflow: visible;
+  animation: jarIn .6s var(--ease) .1s both;
+}
+@keyframes jarIn {
+  0%   { opacity: 0; transform: translateY(12px) scale(.97); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* the stem writes itself upward before anything grows off it */
+#splashStem {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: stemDraws .9s var(--ease) .3s both;
+}
+@keyframes stemDraws { to { stroke-dashoffset: 0; } }
+
+.splash__plant .tip { animation: tipIn .4s var(--bounce) 1.05s both; }
+@keyframes tipIn { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+
+/* The real unfurl, staggered. js/splash.js sets --grow-delay per leaf and then
+   drops .is-ungrown once — the leaves come up in sequence off one class change
+   rather than a chain of timers. */
+.splash__plant .leaf,
+.splash__plant .leaf__droop {
+  transition-delay: var(--grow-delay, 0ms);
+}
+/* The delay belongs to growing, not to being hidden — left on both directions
+   it also postpones the leaf disappearing, so the bare state never arrives. */
+.splash__plant .leaf.is-ungrown,
+.splash__plant .leaf.is-ungrown .leaf__droop {
+  transition-delay: 0ms;
+}
+
+.splash__plant .water { --water-y: 430px; animation: waterRises 1.5s var(--ease) .5s both; }
+@keyframes waterRises {
+  from { transform: translateY(552px); }
+  to   { transform: translateY(430px); }
+}
+
+/* ── the words, and the way in ─────────────────────────── */
+
+.splash__title {
+  margin-top: var(--sp-3);
+  font-family: var(--display);
+  font-size: clamp(2rem, 6vw, 2.9rem);
+  font-weight: 400;
+  letter-spacing: .01em;
+  line-height: 1;
+  color: var(--ink);
+  animation: riseUp .7s var(--ease) 1.5s both;
+}
+.splash__line {
+  max-width: 26ch;
+  font-size: var(--t-sm);
+  color: var(--muted);
+  animation: riseUp .7s var(--ease) 1.62s both;
+}
+@keyframes riseUp {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.splash__go {
+  margin-top: var(--sp-4);
+  padding: .85rem 2.1rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--pill-bg);
+  color: var(--pill-fg);
+  font-family: var(--display);
+  font-size: var(--t-base);
+  font-weight: 500;
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  animation: riseUp .7s var(--ease) 1.78s both, breathe 3.4s var(--ease) 2.5s infinite;
+  transition: transform .2s var(--bounce), background-color .2s var(--ease);
+}
+.splash__go:hover { background: var(--moss); transform: translateY(-1px); }
+.splash__go:active { transform: scale(.96); }
+/* the ring the rest of the app uses, so the door matches the house */
+.splash__go:focus-visible { outline: 2.5px solid var(--moss); outline-offset: 4px; }
+
+/* a slow ring, so the button reads as waiting rather than sitting */
+@keyframes breathe {
+  0%, 100% { box-shadow: var(--shadow-md), 0 0 0 0 rgba(78, 128, 88, .30); }
+  50%      { box-shadow: var(--shadow-md), 0 0 0 12px rgba(78, 128, 88, 0); }
+}
+
+/* ── leaving ───────────────────────────────────────────── */
+
+.splash.is-leaving {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+/* nothing behind it should move while it is up */
+body.is-splashing { overflow: hidden; }
+
+@media (max-width: 700px) {
+  .splash__plant { width: min(58vw, 190px); }
+  .splash__go { min-height: 48px; padding-inline: 1.8rem; }
+}
+
+/* One frame, no theatre. The global reduced-motion rule already flattens every
+   duration; these make sure nothing is left invisible by an animation that
+   never got to run its `both` fill. */
+@media (prefers-reduced-motion: reduce) {
+  .splash__night { opacity: 0; }
+  .splash__sun { opacity: .5; }
+  .splash__plant, .splash__title, .splash__line, .splash__go { opacity: 1; transform: none; }
+  #splashStem { stroke-dashoffset: 0; }
+  .splash__go { animation: none; }
+}

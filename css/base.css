@@ -1,0 +1,446 @@
+/* base.css — reset, page shell, the light behind everything. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* An explicit `display` on a panel outranks the UA's `[hidden] { display:none }`,
+   so the tab panels need this to actually hide. */
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body, h1, h2, h3, p, dl, dd, figure, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+button, input { font: inherit; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+
+body {
+  min-height: 100vh;
+  font-family: var(--sans);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bone);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── the place ────────────────────────────────────────────
+   Four layers: ground, foliage, a sun that crosses the day, a vignette.
+   None of them transition their colour — the palette snaps at 20:00, and a
+   slow fade here would leave light text on a light ground for a second. */
+.field {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background:
+    linear-gradient(178deg, rgba(150,178,150,.30) 0%, rgba(0,0,0,0) 42%),
+    linear-gradient(2deg,  rgba(72,112,80,.26)   0%, rgba(0,0,0,0) 46%),
+    var(--bone);
+}
+body[data-dusk="1"] .field, body[data-dusk="auto"] .field {
+  background:
+    linear-gradient(178deg, rgba(70,108,80,.30) 0%, rgba(0,0,0,0) 44%),
+    linear-gradient(2deg,  rgba(20,44,28,.55)  0%, rgba(0,0,0,0) 48%),
+    var(--bone);
+}
+
+/* Foliage. Blurred silhouettes bleeding off the edges — this is what gives
+   the page depth; gradients alone stay flat however many you stack. */
+.field__flora {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  filter: blur(22px);
+}
+.flora__far  { fill: var(--canopy); opacity: .045; }
+.flora__near { fill: var(--moss-deep); opacity: .06; }
+body[data-dusk="1"] .flora__far, body[data-dusk="auto"] .flora__far { opacity: .10; }
+body[data-dusk="1"] .flora__near, body[data-dusk="auto"] .flora__near { opacity: .07; }
+
+/* Custom properties are not animatable until they are registered, and the sun's
+   position lives inside a gradient rather than in `background-position`, so
+   without these four the glow would jump between ticks instead of gliding. */
+@property --sun-x    { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+@property --sun-y    { syntax: '<percentage>'; inherits: true; initial-value: 18%; }
+@property --sun-warm { syntax: '<number>';     inherits: true; initial-value: 0; }
+@property --sun-lift { syntax: '<number>';     inherits: true; initial-value: 1; }
+
+/* Only these four ease. The palette still snaps at 20:00 — a slow colour fade
+   there is what once left light text on a light ground for over a second. */
+body {
+  transition: --sun-x 2s var(--ease), --sun-y 2s var(--ease),
+              --sun-warm 2s var(--ease), --sun-lift 2s var(--ease);
+}
+
+/* The sun. Position and brightness ease; the colours do not. */
+.field__sun {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(38vw 34vw at var(--sun-x) var(--sun-y),
+      rgba(255, 238, 198, calc(.30 + .34 * var(--sun-warm))) 0%,
+      rgba(255, 246, 220, .16) 38%,
+      rgba(0, 0, 0, 0) 72%);
+  opacity: calc(.45 + .55 * var(--sun-lift));
+}
+body[data-dusk="1"] .field__sun, body[data-dusk="auto"] .field__sun {
+  background:
+    radial-gradient(42vw 38vw at var(--sun-x) var(--sun-y),
+      rgba(126, 168, 138, .16) 0%,
+      rgba(90, 130, 104, .07) 44%,
+      rgba(0, 0, 0, 0) 74%);
+  opacity: .85;
+}
+
+.field__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 46%, rgba(0,0,0,0) 52%, rgba(28,48,34,.13) 100%);
+}
+body[data-dusk="1"] .field__vignette, body[data-dusk="auto"] .field__vignette {
+  background: radial-gradient(120% 100% at 50% 44%, rgba(0,0,0,0) 40%, rgba(0,0,0,.45) 100%);
+}
+
+/* the tooth — the one thing that stops this looking printed by a machine */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: var(--grain-alpha);
+  mix-blend-mode: var(--grain-blend);
+}
+
+/* ── masthead ─────────────────────────────────────────── */
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.4rem clamp(1.1rem, 4vw, 3rem) 0;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+.brand { display: flex; align-items: center; gap: .55rem; color: var(--moss-deep); }
+.brand__mark { width: 26px; height: 26px; flex: none; }
+.brand__name {
+  font-family: var(--display);
+  font-size: var(--t-md);
+  letter-spacing: .045em;
+  color: var(--ink);
+}
+/* screen-reader text for the icon-only theme buttons */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.masthead__end { display: flex; align-items: center; gap: .9rem; }
+
+/* ── appearance ───────────────────────────────────────── */
+.theme {
+  display: flex;
+  gap: .15rem;
+  padding: .22rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.theme button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  color: var(--faint);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.theme svg { width: 15px; height: 15px; display: block; }
+.theme button:hover { color: var(--ink-2); }
+.theme button:active { transform: scale(.9); }
+.theme button[aria-checked="true"] {
+  color: var(--pill-fg);
+  background: var(--pill-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── view tabs ────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: .2rem;
+  padding: .3rem;
+  border-radius: var(--r-pill);
+  background: var(--tile);
+}
+.tabs button {
+  padding: .42rem 1.1rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: none;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--faint);
+  transition: color .2s var(--ease), background-color .25s var(--ease), transform .2s var(--bounce);
+}
+.tabs button:hover { color: var(--ink-2); }
+.tabs button:active { transform: scale(.94); }
+.tabs button[aria-selected="true"] {
+  color: var(--pill-fg);
+  background: var(--pill-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.stamp {
+  font-size: var(--t-sm);
+  color: var(--muted);
+  letter-spacing: .04em;
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+}
+.stamp__clock { font-family: var(--display); font-size: var(--t-md); color: var(--ink-2); }
+.stamp__tz { font-size: var(--t-xs); letter-spacing: var(--track-wide); text-transform: uppercase; color: var(--faint); }
+.stamp__dot { color: var(--faint); }
+
+/* ── the fold ─────────────────────────────────────────── */
+/* The record is its own tab, so nothing follows the fold and a deep bottom
+   padding here is dead space outside the glass — it is what kept the Today view
+   a few pixels over the viewport once already. Those pixels are worth more
+   inside the pane, as the inset above the cards. .dash carries its own bottom
+   padding, so the record tab is unaffected. */
+main { max-width: 1500px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 3rem) .5rem; }
+
+
+.stage {
+  display: grid;
+  /* The sides are capped and the middle takes whatever is left. Uncapped sides
+     swell on a wide screen and pinch the plants into a slot between two slabs;
+     capping all three made every track shrink proportionally, so the centre
+     never got the room either. .stagecentre holds its own 720px ceiling. */
+  grid-template-columns: minmax(190px, 300px) minmax(430px, 1fr) minmax(320px, 390px);
+  justify-content: center;
+  gap: clamp(1rem, 2.4vw, 2.6rem);
+  /* Not `center`. Three columns of different natural heights, each floated to
+     the middle of the pane, is what left ~99px of void above and below the log
+     panel and gave the three columns six different edges. Stretch, and let each
+     column decide its own top and bottom. */
+  align-items: stretch;
+  /* One pane of glass on a greenhouse bench, holding the whole day. The three
+     columns sit on it and are told apart by elevation rather than each being
+     its own box. */
+  /* Vertical was 1.8vh against 1.6vw horizontal, so the cards sat 15px off the
+     top edge and 24px off the sides — reading as though they were sliding off
+     the top. Near enough to even now. */
+  padding: clamp(1.1rem, 2.6vh, 1.6rem) clamp(.9rem, 1.6vw, 1.5rem);
+  margin-top: clamp(.5rem, 1.4vh, 1rem);
+  border-radius: var(--r-2xl);
+  background: var(--canvas);
+  border: 1px solid var(--canvas-edge);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--highlight);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  /* Fill the page rather than leaving a void beneath the pane. min-height, not
+     height, so taller content still grows instead of being clipped. */
+  min-height: calc(100dvh - 8.5rem);
+}
+
+/* ── shared controls ──────────────────────────────────── */
+.eyebrow {
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: .9rem;
+}
+.eyebrow--sub { margin-top: .85rem; }
+
+.btn {
+  --btn-bg: var(--tile);
+  --btn-fg: var(--ink-2);
+  --btn-edge: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .55rem 1.05rem;
+  border: 1.5px solid var(--btn-edge);
+  border-radius: var(--r-pill);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  letter-spacing: .01em;
+  cursor: pointer;
+  transition: background-color .22s var(--ease), border-color .22s var(--ease),
+              color .22s var(--ease), transform .18s var(--bounce);
+}
+.btn:hover { --btn-bg: var(--tile-2); --btn-fg: var(--moss-deep); }
+.btn:active { transform: scale(.95); }
+.btn--solid {
+  --btn-bg: var(--pill-bg);
+  --btn-fg: var(--pill-fg);
+  --btn-edge: transparent;
+}
+.btn--solid:hover { --btn-bg: var(--moss); --btn-fg: var(--pill-fg); }
+
+/* Off by default. The key still fires — bindKeys() never consults this — and
+   the shortcut moves into the button's tooltip instead. */
+body[data-keys="off"] kbd { display: none; }
+
+kbd {
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 5px;
+  background: var(--hair-soft);
+  border-radius: var(--r-pill);
+  color: var(--faint);
+  letter-spacing: .03em;
+}
+
+:where(button, input, a):focus-visible {
+  outline: 2.5px solid var(--moss);
+  outline-offset: 3px;
+  border-radius: var(--r-pill);
+}
+
+::selection { background: var(--tile-2); color: var(--canopy); }
+
+/* Scrollbars inside the panels, so the entry and plan lists do not punch a
+   grey system bar through the glass. */
+.entries, .plan__list { scrollbar-width: thin; scrollbar-color: var(--tile-2) transparent; }
+.entries::-webkit-scrollbar, .plan__list::-webkit-scrollbar { width: 6px; }
+.entries::-webkit-scrollbar-track, .plan__list::-webkit-scrollbar-track { background: transparent; }
+.entries::-webkit-scrollbar-thumb, .plan__list::-webkit-scrollbar-thumb {
+  background: var(--tile-2);
+  border-radius: var(--r-pill);
+}
+.entries::-webkit-scrollbar-thumb:hover, .plan__list::-webkit-scrollbar-thumb:hover {
+  background: var(--sage);
+}
+
+/* ── toast ────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translate(-50%, 12px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .55rem .6rem .55rem 1.15rem;
+  background: var(--glass);
+  border: 1.5px solid var(--glass-edge);
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 var(--highlight);
+  font-size: var(--t-sm);
+  opacity: 0;
+  transition: opacity .3s var(--ease), transform .35s var(--bounce);
+}
+.toast[hidden] { display: none; }
+.toast.is-up { opacity: 1; transform: translate(-50%, 0); }
+.toast__undo {
+  border: none;
+  background: var(--tile-2);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  color: var(--moss-deep);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: .01em;
+  padding: .3rem .85rem;
+  transition: background-color .2s var(--ease);
+}
+.toast__undo:hover { background: var(--moss-deep); color: var(--bone); }
+
+/* ── colophon ─────────────────────────────────────────── */
+.colophon {
+  margin-top: 2rem;
+  padding-top: 1.3rem;
+  font-size: var(--t-xs);
+  letter-spacing: .04em;
+  color: var(--faint);
+  border-top: var(--rule) solid var(--hair-soft);
+}
+
+/* ── responsive ───────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .stage {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "plant plant" "ledger log";
+  }
+  .stagecentre { grid-area: plant; }
+  .ledger      { grid-area: ledger; }
+  .logbook     { grid-area: log; }
+}
+/* ── phone ────────────────────────────────────────────────
+   Glance first: the figures come before the jars, day setup folds away, and
+   quick-add pins to the thumb. Everything below assumes one column. */
+@media (max-width: 700px) {
+  :root {
+    --fig-1: clamp(2.1rem, 11vw, 2.8rem);
+    --fig-2: clamp(1.5rem, 7.5vw, 2rem);
+    --fig-3: 1.4rem;
+    --pad: 1rem;
+  }
+
+  .stage {
+    grid-template-columns: 1fr;
+    grid-template-areas: "plant" "log" "ledger";
+    /* a full-bleed card reads better than a small pane inside a margin, and
+       the desktop pane's dvh floor just leaves dead space on a phone */
+    min-height: 0;
+    gap: 1.1rem;
+    padding: 1rem .85rem 1.2rem;
+    margin-top: .4rem;
+    border-radius: var(--r-lg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  main { padding: 0 .7rem 1rem; }
+  .masthead { padding: .9rem .9rem 0; gap: .6rem; }
+  .brand__name { font-size: var(--t-base); }
+  .tabs { order: 3; width: 100%; }
+  .tabs button { flex: 1 1 0; padding: .6rem .5rem; min-height: 44px; }
+  .masthead__end { margin-left: auto; gap: .6rem; }
+  .theme button { width: 44px; height: 44px; }
+  .theme svg { width: 18px; height: 18px; }
+
+  /* room for the pinned bar, plus the home indicator */
+  body { padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(9.2rem + env(safe-area-inset-bottom, 0px)); }
+
+  /* 44px minimums across every control */
+  .btn { min-height: 44px; padding-inline: 1rem; }
+  kbd { display: none; }
+}
+
+/* Hover-revealed controls are unreachable on a touchscreen at any width, so
+   this keys off the pointer rather than the viewport. */
+@media (hover: none) {
+  .entry__del, .planrow__del { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
