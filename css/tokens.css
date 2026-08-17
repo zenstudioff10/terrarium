@@ -132,11 +132,16 @@
 
   --foliage:   color-mix(in oklab, var(--leaf-dead) calc(var(--leaf-mix) * 100%), var(--leaf-live));
   --foliage-2: color-mix(in oklab, var(--leaf-dead) calc(var(--leaf-mix) * 88%), var(--leaf-live-2));
+  /* the half of the leaf below its midrib — this is the whole reason one leaf
+     lying across another reads as being in front of it */
+  --leaf-shade: 24%;
+  --foliage-3: color-mix(in oklab, #0b1710 var(--leaf-shade), var(--foliage));
+  --foliage-4: color-mix(in oklab, #0b1710 var(--leaf-shade), var(--foliage-2));
 }
 
 /* species: the hue it grows in */
 .plant[data-species="fern"]  { --leaf-h: 138; --leaf-s: 26%; }
-.plant[data-species="ivy"]   { --leaf-h: 156; --leaf-s: 21%; }
+.plant[data-species="ivy"]   { --leaf-h: 152; --leaf-s: 27%; }
 .plant[data-species="jade"]  { --leaf-h: 112; --leaf-s: 17%; }
 .plant[data-species="grass"] { --leaf-h: 84;  --leaf-s: 31%; }
 
@@ -218,7 +223,8 @@ body[data-dusk="auto"] .stagecentre[data-state="spent"]    { --pool-a: rgba(160,
 
 /* Only the ladder moves at night — the species hue and the composition stay,
    so a jade plant is still jade after dark. */
-body[data-dusk="1"] .plant, body[data-dusk="auto"] .plant { --leaf-dead: #A67150; }
+/* A shadow this deep goes to mud against a dark ground, so it lightens. */
+body[data-dusk="1"] .plant, body[data-dusk="auto"] .plant { --leaf-dead: #A67150; --leaf-shade: 15%; }
 body[data-dusk="1"] .plant[data-state="thriving"],
 body[data-dusk="auto"] .plant[data-state="thriving"] { --leaf-l: 50%; }
 body[data-dusk="1"] .plant[data-state="steady"],

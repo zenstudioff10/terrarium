@@ -108,13 +108,14 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   100% { opacity: 1; transform: none; }
 }
 
-/* the stem writes itself upward before anything grows off it */
-#splashStem {
-  stroke-dasharray: 240;
-  stroke-dashoffset: 240;
-  animation: stemDraws .9s var(--ease) .3s both;
+/* The stem writes itself upward before anything grows off it. A clip wipe
+   rather than stroke-dashoffset: the stem is a tapered fill now, and a dash
+   offset has no stroke to run along. */
+#splashStem { animation: stemDraws .9s var(--ease) .3s both; }
+@keyframes stemDraws {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
 }
-@keyframes stemDraws { to { stroke-dashoffset: 0; } }
 
 .splash__plant .tip { animation: tipIn .4s var(--bounce) 1.05s both; }
 @keyframes tipIn { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
@@ -212,6 +213,6 @@ body.is-splashing { overflow: hidden; }
   .splash__night { opacity: 0; }
   .splash__sun { opacity: .5; }
   .splash__plant, .splash__title, .splash__line, .splash__go { opacity: 1; transform: none; }
-  #splashStem { stroke-dashoffset: 0; }
+  #splashStem { clip-path: none; }
   .splash__go { animation: none; }
 }

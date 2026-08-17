@@ -27,22 +27,35 @@
   var SPECIES = {
     fern: {
       stem: { p0: [210, 300], p1: [221, 184], p2: [209, 72] },
-      count: 10, shape: '#leafFern', a0: 16, a1: 42, s0: 1.14, s1: -0.66
+      count: 10, shape: '#leafFern', a0: 16, a1: 42, s0: 1.14, s1: -0.66,
+      w0: 4.2, w1: 1.3, tSpan: 0.86
     },
     ivy: {
       // a looser, wandering stem with broad leaves close in to it
-      stem: { p0: [210, 300], p1: [178, 190], p2: [214, 78] },
-      count: 12, shape: '#leafIvy', a0: 34, a1: 30, s0: 0.98, s1: -0.42
+      stem: { p0: [210, 300], p1: [176, 192], p2: [216, 80] },
+      // Nine, not twelve, and splayed wider: at a tight angle the leaves
+      // overlapped so heavily they merged into one lumpy column.
+      count: 8, shape: '#leafIvy', a0: 50, a1: 28, s0: 0.92, s1: -0.32,
+      w0: 3.4, w1: 1.1, tSpan: 0.88
     },
     jade: {
-      // upright and sparse, with fat rounded pads
+      // upright and sparse, with fat rounded pads on a thick trunk
       stem: { p0: [210, 300], p1: [212, 196], p2: [208, 96] },
-      count: 8, shape: '#leafJade', a0: 30, a1: 26, s0: 0.86, s1: -0.24
+      count: 8, shape: '#leafJade', a0: 38, a1: 24, s0: 1.06, s1: -0.28,
+      w0: 6.2, w1: 2.4, tSpan: 0.84
     },
     grass: {
-      // no real stem to speak of: long blades fanning from the base
-      stem: { p0: [210, 300], p1: [210, 232], p2: [209, 150] },
-      count: 13, shape: '#leafGrass', a0: 52, a1: 34, s0: 1.32, s1: -0.44
+      // Barely a stem at all. The blades come off the bottom of it and fan
+      // wide, which is what makes grass read as grass rather than as leaves
+      // stuck up a stalk — tSpan keeps them near the base and the angle runs
+      // from steep to shallow instead of the other way round.
+      // The stem stops just above the blades. Run to the same height as the
+      // others and it leaves a bare stalk poking out of the tuft.
+      stem: { p0: [210, 300], p1: [210, 268], p2: [209, 240] },
+      count: 13, shape: '#leafGrass', a0: 74, a1: -52, s0: 1.28, s1: -0.30,
+      w0: 2.6, w1: 1.2, tSpan: 0.34,
+      // grass has no fiddlehead to uncurl — the blade is the whole plant
+      tip: false
     }
   };
 
@@ -59,16 +72,49 @@
     ];
   }
 
+  /* The stem used to be one hardcoded stroke in the markup, shared by every
+     species — so ivy, jade and grass had their leaves placed along a curve
+     that was never actually drawn. It is built from the species' own curve
+     now, and as a filled outline rather than a stroke, because a stroke is one
+     width from end to end and a stem is not: it is thick where it leaves the
+     water and fine at the growing tip. */
+  function stemOutline(sp) {
+    var steps = 26;
+    var up = [], down = [];
+
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var p = onStem(sp.stem, t);
+      // derivative of the quadratic, for the normal
+      var dx = 2 * (1 - t) * (sp.stem.p1[0] - sp.stem.p0[0]) + 2 * t * (sp.stem.p2[0] - sp.stem.p1[0]);
+      var dy = 2 * (1 - t) * (sp.stem.p1[1] - sp.stem.p0[1]) + 2 * t * (sp.stem.p2[1] - sp.stem.p1[1]);
+      var len = Math.sqrt(dx * dx + dy * dy) || 1;
+      var nx = -dy / len, ny = dx / len;
+
+      // eased so the flare sits low rather than running the whole length
+      var w = sp.w1 + (sp.w0 - sp.w1) * Math.pow(1 - t, 1.7);
+      up.push([(p[0] + nx * w).toFixed(1), (p[1] + ny * w).toFixed(1)]);
+      down.push([(p[0] - nx * w).toFixed(1), (p[1] - ny * w).toFixed(1)]);
+    }
+
+    var d = 'M' + up[0][0] + ' ' + up[0][1];
+    for (var a = 1; a < up.length; a++) d += 'L' + up[a][0] + ' ' + up[a][1];
+    for (var b = down.length - 1; b >= 0; b--) d += 'L' + down[b][0] + ' ' + down[b][1];
+    return d + 'Z';
+  }
+
   /** Where every leaf of a species sits, computed once per species. */
   function leavesFor(name) {
     var sp = specOf(name);
     var out = [];
+    var span = sp.tSpan == null ? 0.86 : sp.tSpan;
     for (var i = 0; i < sp.count; i++) {
-      var t = 0.05 + (i / (sp.count - 1)) * 0.86;
+      var t = 0.05 + (i / (sp.count - 1)) * span;
       var pt = onStem(sp.stem, t);
       // a fixed, unrandom wobble so no two leaves sit at quite the same angle
-      var jitterA = ((i % 3) - 1) * 2.6;
-      var jitterS = (i % 2) ? -0.04 : 0.035;
+      // a fixed, unrandom wobble so no two leaves sit at quite the same angle
+      var jitterA = ((i % 3) - 1) * 4.4 + ((i % 5) - 2) * 1.8;
+      var jitterS = (i % 2) ? -0.06 : 0.05;
       out.push({
         x: pt[0],
         y: pt[1],
@@ -185,8 +231,23 @@
       aiming at, which reads as "not yet" rather than as a dead plant. */
   function setSpecies(name) {
     species = SPECIES[name] ? name : DEFAULT_SPECIES;
+    var sp = specOf(species);
+
     left.svg.setAttribute('data-species', species);
     grown.svg.setAttribute('data-species', species);
+
+    // every stem on the page, including the splash's and the ghost's
+    var outline = stemOutline(sp);
+    var tip = onStem(sp.stem, 1);
+    var stems = document.querySelectorAll('.stem');
+    for (var i = 0; i < stems.length; i++) stems[i].setAttribute('d', outline);
+    var tips = document.querySelectorAll('.tip');
+    for (var j = 0; j < tips.length; j++) {
+      tips[j].setAttribute('transform', 'translate(' + tip[0].toFixed(1) + ' ' + tip[1].toFixed(1) + ')');
+      if (sp.tip === false) tips[j].setAttribute('hidden', '');
+      else tips[j].removeAttribute('hidden');
+    }
+
     left.leaves = buildLeaves(left.host, species);
     grown.leaves = buildLeaves(grown.host, species);
     buildLeaves(grown.ghostHost, species);
