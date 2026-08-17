@@ -421,8 +421,16 @@ body[data-dusk="auto"] .foliage--ghost { opacity: .12; }
 
 /* ── arrival ───────────────────────────────────────────────
    Staggered, and the jars land last so the eye reaches the figures first.
-   base.css blanks all of this under prefers-reduced-motion. */
-.is-arriving > * { animation: riseIn .5s var(--ease) both; }
+   base.css blanks all of this under prefers-reduced-motion.
+
+   `backwards`, not `both`. With `both` the element keeps the last keyframe
+   after the animation ends, and a `transform: none` keyframe interpolated from
+   a translate computes to the identity *matrix* rather than the `none` keyword.
+   Any transform — identity included — makes an element the containing block for
+   its position:fixed descendants, which left the pinned quick-add bar anchored
+   to the log panel instead of to the phone's viewport. `backwards` still hides
+   the element through the delay, then hands it back to its own styles. */
+.is-arriving > * { animation: riseIn .5s var(--ease) backwards; }
 .is-arriving > .ledger      { animation-delay: .02s; }
 .is-arriving > .logbook     { animation-delay: .06s; }
 .is-arriving > .stagecentre { animation-delay: .10s; }

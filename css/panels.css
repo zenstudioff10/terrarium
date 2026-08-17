@@ -1006,6 +1006,11 @@
   }
   .booktabs button { min-height: 44px; }
 
+  /* No entrance animation here. Even a half-second transform on an ancestor
+     re-anchors the fixed bar below, and on a phone the pinned bar matters more
+     than the flourish. */
+  .is-arriving > * { animation: none; }
+
   /* Quick-add rides in the thumb zone while everything else scrolls past it.
      It sits inside #bookLog, so it vanishes with the panel on the Plan tab. */
   .quickadd {
