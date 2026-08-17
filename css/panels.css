@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: .46rem .7rem .56rem;
+  padding: .38rem .7rem .48rem;
   border-radius: var(--r-sm);
   transition: background-color .2s var(--ease);
 }
@@ -153,7 +153,7 @@
   background: var(--tile);
 }
 .windowend__opts button {
-  padding: .42rem .2rem;
+  padding: .46rem .25rem;
   border: none;
   border-radius: var(--r-pill);
   background: none;
@@ -192,6 +192,7 @@
 .nightsleep { margin-top: var(--sp-4); }
 .nightsleep__label {
   display: block;
+  white-space: nowrap;
   font-size: var(--t-xs);
   font-weight: 600;
   color: var(--muted);
@@ -208,7 +209,7 @@
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  padding: .55rem .7rem;
+  padding: .55rem .6rem;
   border: 1.5px solid transparent;
   border-radius: var(--r-pill);
   background: var(--tile);
@@ -287,7 +288,7 @@
   flex-direction: column;
   align-items: center;
   gap: .28rem;
-  padding: .5rem .3rem .45rem;
+  padding: .55rem .4rem;
   border: none;
   border-radius: var(--r-pill);
   background: transparent;
@@ -315,7 +316,7 @@
   align-items: center;
   justify-content: center;
   gap: .35rem;
-  padding: .7rem .3rem;
+  padding: .52rem .4rem;
   border: 1.5px solid transparent;
   border-radius: var(--r-pill);
   background: var(--tile);
@@ -328,17 +329,21 @@
 .chip:active { transform: scale(.93); }
 
 .custom { margin-top: .5rem; }
-.custom__row { display: grid; grid-template-columns: 4.7rem 3.9rem minmax(0, 1fr) auto; gap: .45rem; }
-.custom__at { text-align: center; }
+.custom__row { display: grid; grid-template-columns: 4.2rem 3.4rem minmax(0, 1fr) auto; gap: .4rem; }
 .custom__row input {
   min-width: 0;
-  padding: .6rem .95rem;
+  padding: .55rem .85rem;
   border: 1.5px solid transparent;
   border-radius: var(--r-pill);
   background: var(--tile);
   font-size: var(--t-sm);
   transition: background-color .2s var(--ease), border-color .2s var(--ease);
 }
+/* These two hold "45m" and "now" — they do not need the side padding a
+   sentence-width field does, and at 14px it was eating the placeholder. Placed
+   after .custom__row input and matching its specificity, or it loses. */
+.custom__row .custom__dur,
+.custom__row .custom__at { padding-inline: .5rem; text-align: center; }
 .custom__row input:hover { background: var(--tile-2); }
 .custom__row input:focus { outline: none; border-color: var(--moss); background: var(--tile-2); }
 .custom__row input::placeholder { color: var(--faint); }
@@ -349,7 +354,7 @@
   justify-content: space-between;
   gap: .8rem;
   margin-top: 1rem;
-  padding: .65rem .65rem .65rem 1.05rem;
+  padding: .5rem .5rem .5rem 1.05rem;
   border-radius: var(--r-pill);
   background: var(--tile);
 }
@@ -515,15 +520,15 @@
 
 .booktabs__count {
   display: inline-block;
-  min-width: 1.15rem;
+  min-width: 1.2rem;
   margin-left: .35rem;
   padding: 0 .3rem;
   border-radius: var(--r-pill);
   background: var(--tile-2);
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.15rem;
+  line-height: 1.2rem;
   text-align: center;
   vertical-align: text-top;
 }
@@ -536,7 +541,7 @@
 .taskadd__row { display: grid; grid-template-columns: 4.7rem 3.9rem minmax(0, 1fr); gap: .45rem; }
 .taskadd input {
   min-width: 0;
-  padding: .6rem .95rem;
+  padding: .55rem .85rem;
   border: 1.5px solid transparent;
   border-radius: var(--r-pill);
   background: var(--tile);
@@ -808,10 +813,10 @@
   background: var(--tile-2);
   color: var(--moss-deep);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .02em;
-  padding: .22rem .5rem;
+  padding: .26rem .6rem;
   white-space: nowrap;
   transition: background-color .2s var(--ease), color .2s var(--ease);
 }
@@ -927,15 +932,15 @@
 }
 /* Five control groups live in here now. It is a receded block by design, so
    the rhythm inside it is tighter than the panels it sits under. */
-.daysetup .windowend { margin-top: var(--sp-2); }
-.daysetup .windowend__label { font-size: 10.5px; color: var(--faint); }
+.daysetup .windowend { margin-top: .4rem; }
+.daysetup .windowend__label { font-size: var(--t-xs); color: var(--faint); }
 .daysetup .windowend__opts button { padding: .3rem .2rem; font-size: var(--t-xs); }
-.daysetup .nightsleep { margin-top: var(--sp-3); }
-.daysetup .windowend--inline { margin-top: var(--sp-3); }
-.daysetup .nightsleep__label { font-size: 10.5px; color: var(--faint); }
+.daysetup .nightsleep { margin-top: .5rem; }
+.daysetup .windowend--inline { margin-top: .5rem; }
+.daysetup .nightsleep__label { font-size: var(--t-xs); color: var(--faint); }
 /* Instructions you read once, in a block that has already receded. */
 .daysetup .windowend__note,
-.daysetup .nightsleep__note { font-size: 10.5px; line-height: 1.45; margin-top: .3rem; }
+.daysetup .nightsleep__note { font-size: var(--t-xs); line-height: 1.45; margin-top: .3rem; }
 
 /* ── phone ──────────────────────────────────────────────── */
 @media (max-width: 700px) {

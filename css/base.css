@@ -9,6 +9,10 @@ html { -webkit-text-size-adjust: 100%; }
 body, h1, h2, h3, p, dl, dd, figure, ul { margin: 0; padding: 0; }
 ul { list-style: none; }
 button, input { font: inherit; color: inherit; }
+/* 1.55 is reading leading, for paragraphs. On a control it only makes the pill
+   tall and the label look small inside it — which is exactly how every button
+   on this page was reading. */
+button, input { line-height: 1.2; }
 img, svg { display: block; max-width: 100%; }
 
 body {
@@ -273,7 +277,7 @@ main { max-width: 1500px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 3rem) .5
   display: inline-flex;
   align-items: center;
   gap: .4rem;
-  padding: .55rem 1.05rem;
+  padding: .5rem 1.1rem;
   border: 1.5px solid var(--btn-edge);
   border-radius: var(--r-pill);
   background: var(--btn-bg);

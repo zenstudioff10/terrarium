@@ -581,5 +581,5 @@ body[data-dusk="1"] .strip__spent, body[data-dusk="auto"] .strip__spent { opacit
 
 @media (max-width: 700px) {
   .nudge { padding-left: .7rem; }
-  .nudge__hide { width: 34px; height: 34px; }
+  .nudge__hide { width: 40px; height: 40px; }
 }
