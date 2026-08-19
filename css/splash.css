@@ -27,23 +27,43 @@
 .splash__night {
   position: absolute;
   inset: 0;
-  /* Nearly opaque: at rgba(.5) over cream this read as a grey wash rather than
-     as night, and the sun had nothing to rise against. */
+  /* Light mode's ground is cream and its text is dark green. A near-opaque
+     black here turned the whole splash dark while the title was still painted
+     in dark ink — unreadable for about a second. This is a pre-dawn haze
+     instead: enough to feel like the light has not arrived, never enough to
+     swallow dark text. The dark-mode value lives below. */
   background:
     linear-gradient(180deg,
-      rgba(9, 18, 13, .97) 0%,
-      rgba(12, 24, 17, .95) 42%,
-      rgba(16, 31, 21, .93) 100%);
-  animation: nightLifts 1.9s var(--ease) .2s backwards;
+      rgba(74, 84, 70, .46) 0%,
+      rgba(58, 70, 56, .40) 42%,
+      rgba(46, 58, 46, .34) 100%);
+  /* The resting state lives here, not in the last keyframe. `backwards` applies
+     the first keyframe through the delay and then hands the element back to its
+     own styles — so anything that must END somewhere other than its default has
+     to declare that default here, or it springs back the moment the animation
+     finishes. This one sprang back to a full-strength haze. */
+  opacity: 0;
+  /* Clears at 1.45s. The title lands at 1.5s, so the two never overlap. */
+  animation: nightLifts 1.35s var(--ease) .1s backwards;
 }
 /* --ease front-loads hard, so an even 1 → 0 was down to .62 within 450ms and
    the night never read as night. The value is held across the first half of the
    timeline and falls in the second. */
 @keyframes nightLifts {
   0%   { opacity: 1; }
-  30%  { opacity: .96; }
-  55%  { opacity: .82; }
+  35%  { opacity: .92; }
+  60%  { opacity: .70; }
   100% { opacity: 0; }
+}
+
+/* The ground is already near-black at dusk, so an overlay only adds blackness.
+   Barely anything here — the sun coming up does the work instead. */
+body[data-dusk="1"] .splash__night, body[data-dusk="auto"] .splash__night {
+  background:
+    linear-gradient(180deg,
+      rgba(0, 0, 0, .42) 0%,
+      rgba(0, 0, 0, .34) 45%,
+      rgba(0, 0, 0, .26) 100%);
 }
 
 /* the sun, coming up from under the fold */
@@ -54,6 +74,10 @@
     rgba(255, 226, 158, .95) 0%,
     rgba(246, 206, 140, .42) 32%,
     rgba(0, 0, 0, 0) 70%);
+  /* Resting state, same reason as .splash__night: without these the sun drops
+     back below the fold and jumps to full brightness the moment it finishes. */
+  --splash-sun-y: 64%;
+  opacity: .72;
   animation: sunUp 2s var(--ease) .1s backwards;
 }
 @keyframes sunUp {
@@ -63,10 +87,17 @@
 }
 @property --splash-sun-y { syntax: '<percentage>'; inherits: false; initial-value: 108%; }
 
+/* The page behind this has four layers of gradient, flora and vignette giving
+   it depth. The splash paints one flat colour, and at dusk that colour is
+   #101C15 — so it read as a black rectangle. A gentle lift down the height,
+   and a sun with enough in it to be seen. */
+body[data-dusk="1"] .splash, body[data-dusk="auto"] .splash {
+  background: linear-gradient(178deg, #0e1a13 0%, #16241b 52%, #1d2f23 100%);
+}
 body[data-dusk="1"] .splash__sun, body[data-dusk="auto"] .splash__sun {
   background: radial-gradient(48vw 42vw at 50% var(--splash-sun-y, 108%),
-    rgba(150, 200, 160, .30) 0%,
-    rgba(96, 140, 110, .12) 40%,
+    rgba(164, 214, 172, .44) 0%,
+    rgba(104, 152, 118, .19) 40%,
     rgba(0, 0, 0, 0) 72%);
 }
 
@@ -83,7 +114,7 @@ body[data-dusk="1"] .splash__sun, body[data-dusk="auto"] .splash__sun {
 }
 body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   background: radial-gradient(118% 96% at 50% 54%,
-    rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, .58) 100%);
+    rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, .34) 100%);
 }
 
 .splash__body {
