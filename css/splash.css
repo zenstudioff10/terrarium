@@ -34,7 +34,7 @@
       rgba(9, 18, 13, .97) 0%,
       rgba(12, 24, 17, .95) 42%,
       rgba(16, 31, 21, .93) 100%);
-  animation: nightLifts 1.9s var(--ease) .2s both;
+  animation: nightLifts 1.9s var(--ease) .2s backwards;
 }
 /* --ease front-loads hard, so an even 1 → 0 was down to .62 within 450ms and
    the night never read as night. The value is held across the first half of the
@@ -54,7 +54,7 @@
     rgba(255, 226, 158, .95) 0%,
     rgba(246, 206, 140, .42) 32%,
     rgba(0, 0, 0, 0) 70%);
-  animation: sunUp 2s var(--ease) .1s both;
+  animation: sunUp 2s var(--ease) .1s backwards;
 }
 @keyframes sunUp {
   0%   { --splash-sun-y: 112%; opacity: 0; }
@@ -79,7 +79,7 @@ body[data-dusk="1"] .splash__sun, body[data-dusk="auto"] .splash__sun {
   pointer-events: none;
   background: radial-gradient(118% 96% at 50% 54%,
     rgba(0, 0, 0, 0) 44%, rgba(28, 48, 34, .20) 100%);
-  animation: riseUp 1.4s var(--ease) .3s both;
+  animation: riseUp 1.4s var(--ease) .3s backwards;
 }
 body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   background: radial-gradient(118% 96% at 50% 54%,
@@ -101,7 +101,7 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   width: min(46vw, 230px);
   height: auto;
   overflow: visible;
-  animation: jarIn .6s var(--ease) .1s both;
+  animation: jarIn .6s var(--ease) .1s backwards;
 }
 @keyframes jarIn {
   0%   { opacity: 0; transform: translateY(12px) scale(.97); }
@@ -111,14 +111,28 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
 /* The stem writes itself upward before anything grows off it. A clip wipe
    rather than stroke-dashoffset: the stem is a tapered fill now, and a dash
    offset has no stroke to run along. */
-#splashStem { animation: stemDraws .9s var(--ease) .3s both; }
+#splashStem { animation: stemDraws .9s var(--ease) .3s backwards; }
 @keyframes stemDraws {
   from { clip-path: inset(100% 0 0 0); }
   to   { clip-path: inset(0 0 0 0); }
 }
 
-.splash__plant .tip { animation: tipIn .4s var(--bounce) 1.05s both; }
-@keyframes tipIn { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+/* The pop belongs to the coil, not to the group holding it.
+
+   plant.js positions this group with an SVG `transform` attribute, and a CSS
+   animation on `transform` overrides that attribute outright — with fill-mode
+   `both` it kept the final keyframe forever, so the group's translate was
+   discarded and the coil rendered at the SVG's origin, adrift in the top-left
+   corner. The group now animates opacity only; the path inside it does the
+   scaling, where there is no attribute to trample. */
+.splash__plant .tip { animation: tipFade .4s var(--ease) 1.05s backwards; }
+@keyframes tipFade { from { opacity: 0; } to { opacity: 1; } }
+
+.splash__plant .tip__coil {
+  transform-origin: 0 0;
+  animation: tipPop .45s var(--bounce) 1.05s backwards;
+}
+@keyframes tipPop { from { transform: scale(.2); } to { transform: none; } }
 
 /* The real unfurl, staggered. js/splash.js sets --grow-delay per leaf and then
    drops .is-ungrown once — the leaves come up in sequence off one class change
@@ -134,7 +148,7 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   transition-delay: 0ms;
 }
 
-.splash__plant .water { --water-y: 430px; animation: waterRises 1.5s var(--ease) .5s both; }
+.splash__plant .water { --water-y: 430px; animation: waterRises 1.5s var(--ease) .5s backwards; }
 @keyframes waterRises {
   from { transform: translateY(552px); }
   to   { transform: translateY(430px); }
@@ -150,13 +164,13 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   letter-spacing: .01em;
   line-height: 1;
   color: var(--ink);
-  animation: riseUp .7s var(--ease) 1.5s both;
+  animation: riseUp .7s var(--ease) 1.5s backwards;
 }
 .splash__line {
   max-width: 26ch;
   font-size: var(--t-sm);
   color: var(--muted);
-  animation: riseUp .7s var(--ease) 1.62s both;
+  animation: riseUp .7s var(--ease) 1.62s backwards;
 }
 @keyframes riseUp {
   from { opacity: 0; transform: translateY(9px); }
@@ -176,7 +190,7 @@ body[data-dusk="1"] .splash::after, body[data-dusk="auto"] .splash::after {
   letter-spacing: .02em;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  animation: riseUp .7s var(--ease) 1.78s both, breathe 3.4s var(--ease) 2.5s infinite;
+  animation: riseUp .7s var(--ease) 1.78s backwards, breathe 3.4s var(--ease) 2.5s infinite;
   transition: transform .2s var(--bounce), background-color .2s var(--ease);
 }
 .splash__go:hover { background: var(--moss); transform: translateY(-1px); }
@@ -210,6 +224,10 @@ body.is-splashing { overflow: hidden; }
    duration; these make sure nothing is left invisible by an animation that
    never got to run its `both` fill. */
 @media (prefers-reduced-motion: reduce) {
+  /* The global rule zeroes durations but not delays, and `backwards` keeps an
+     element on its first keyframe right through its delay — so without this the
+     splash would still assemble itself over ~1.8s of nothing. */
+  .splash *, .splash { animation-delay: 0s !important; }
   .splash__night { opacity: 0; }
   .splash__sun { opacity: .5; }
   .splash__plant, .splash__title, .splash__line, .splash__go { opacity: 1; transform: none; }
